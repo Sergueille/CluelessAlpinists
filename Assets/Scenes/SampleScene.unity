@@ -1495,20 +1495,28 @@ MonoBehaviour:
     name: Blue
   - color: {r: 0, g: 1, b: 0.043819427, a: 1}
     name: Green
-  cardsInHand: 4
+  cardsInHand: 3
   jumpForce: 5
   jumpVerticalMultiplier: 1.8
-  jetpackForce: 8
+  jetpackForce: 10
   jetpackFuel: 1.5
   jetPackVerticalMultiplier: 2
-  balloonForce: 11
-  balloonDuration: 4
+  balloonForce: 12
+  balloonDuration: 3
+  balloonTargetVelocity: 2
+  bombThrowForce: 4
+  bombThrowVerticalMultiplier: 1.8
+  grapplingThrowForce: 6
+  grapplingThrowVerticalMultiplier: 2
+  grapplingForce: 13
+  grapplingMaxDuration: 6
+  grapplingTargetDistance: 1
   cardPrefab: {fileID: 4317514043087589503, guid: cfe2c5103f7fe654c83c1e692060013e, type: 3}
   characterPrefab: {fileID: 4289312696910580547, guid: aec704623647e4c41a08c3c59163f2ae, type: 3}
   characterStartVerticalSpacing: 0.7
   characterStartHorizontalShift: 0.01
   handYPosition: -305
-  handCardsSpacing: 100
+  handCardsSpacing: 150
   cardDrawMovement:
     amplitude: 200
     duration: 0.8

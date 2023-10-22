@@ -18,6 +18,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float jetPackVerticalMultiplier = 2;
     [SerializeField] private float balloonForce = 12;
     [SerializeField] private float balloonDuration = 12;
+    [SerializeField] private float balloonTargetVelocity = 3;
+    [SerializeField] private float bombThrowForce = 10;
+    [SerializeField] private float bombThrowVerticalMultiplier = 2;
+    [SerializeField] private float grapplingThrowForce = 6;
+    [SerializeField] private float grapplingThrowVerticalMultiplier = 2;
+    [SerializeField] private float grapplingForce = 13;
+    [SerializeField] private float grapplingMaxDuration = 6;
+    [SerializeField] private float grapplingTargetDistance = 0.5f;
 
     [NonSerialized] public int currentPlayerID;
 
@@ -108,8 +116,7 @@ public class GameManager : MonoBehaviour
                 {
                     while (true)
                     {
-                        Vector2 characterScreenPos = CameraController.i.mainCamera.WorldToScreenPoint(CurrentPlayerCharacter.transform.position);
-                        Vector2 force = ((Vector2)Input.mousePosition - characterScreenPos).normalized * jumpForce;
+                        Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jumpForce;
                         force.y *= jumpVerticalMultiplier;
                         CurrentPlayerCharacter.DisplayJumpTrajectory(force);
 
@@ -117,7 +124,7 @@ public class GameManager : MonoBehaviour
 
                         if (CurrentPlayerCharacter.IsTouchingGround() && Input.GetMouseButton(0))
                         {
-                            CurrentPlayerCharacter.AddForce(force);
+                            CurrentPlayerCharacter.AddImpulse(force);
                             break;
                         }
                     }
@@ -132,8 +139,7 @@ public class GameManager : MonoBehaviour
                     {
                         if (Input.GetMouseButton(0))
                         {
-                            Vector2 characterScreenPos = CameraController.i.mainCamera.WorldToScreenPoint(CurrentPlayerCharacter.transform.position);
-                            Vector2 force = ((Vector2)Input.mousePosition - characterScreenPos).normalized * jetpackForce * Time.fixedDeltaTime;
+                            Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jetpackForce;
                             force.y *= jetPackVerticalMultiplier;
 
                             CurrentPlayerCharacter.AddForce(force);
@@ -144,8 +150,21 @@ public class GameManager : MonoBehaviour
                     }
                 }
                 else if (type == ActionType.bomb)
-                {
-                    // TODO
+                {                    
+                    while (true)
+                    {
+                        Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * bombThrowForce;
+                        force.y *= bombThrowVerticalMultiplier;
+                        CurrentPlayerCharacter.DisplayJumpTrajectory(force);
+
+                        yield return new WaitForEndOfFrame();
+
+                        if (Input.GetMouseButton(0))
+                        {
+                            CurrentPlayerCharacter.SpawnBomb(force);
+                            break;
+                        }
+                    }
                 }
                 else if (type == ActionType.balloon)
                 {
@@ -153,13 +172,48 @@ public class GameManager : MonoBehaviour
 
                     while (!Input.GetMouseButton(0) && Time.time < startTime + balloonDuration)
                     {
-                        CurrentPlayerCharacter.AddForce(Vector2.up * balloonForce * Time.fixedDeltaTime);
+                        if (CurrentPlayerCharacter.rb.velocity.y < balloonTargetVelocity)
+                        {
+                            CurrentPlayerCharacter.AddForce(Vector2.up * balloonForce);
+                        }
+
                         yield return new WaitForFixedUpdate();
                     }
                 }
                 else if (type == ActionType.grappling)
                 {
-                    // TODO
+                    while (true)
+                    {
+                        Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * grapplingThrowForce;
+                        force.y *= grapplingThrowVerticalMultiplier;
+                        CurrentPlayerCharacter.DisplayJumpTrajectory(force);
+
+                        yield return new WaitForEndOfFrame();
+
+                        if (Input.GetMouseButton(0))
+                        {
+                            bool touchedSomething = false;
+                            Grappling grappling = CurrentPlayerCharacter.SpawnGrappling(force, () => {
+                                touchedSomething = true;
+                            });
+
+                            yield return new WaitUntil(() => touchedSomething && !Input.GetMouseButton(0));
+                            yield return new WaitForFixedUpdate();
+
+                            float startTime = Time.time;
+                            bool nearEnough = false;
+                            while (Time.time < startTime + grapplingMaxDuration && !nearEnough && !Input.GetMouseButton(0))
+                            {
+                                Vector2 delta = grappling.transform.position - CurrentPlayerCharacter.transform.position;
+                                CurrentPlayerCharacter.AddForce(grapplingForce * delta.normalized);
+
+                                yield return new WaitForFixedUpdate();
+                                nearEnough = delta.magnitude < grapplingTargetDistance;
+                            }
+
+                            break;
+                        }
+                    }
                 }
 
                 card.Dark();
@@ -224,5 +278,11 @@ public class GameManager : MonoBehaviour
     public float GetHandXPosition(int cardID, int cardCount)
     {
         return (cardID + 0.5f - (float)cardCount / 2) * handCardsSpacing;
+    }
+
+    public Vector2 GetPointerDirection(Vector2 pos)
+    {
+        Vector2 screenPos = CameraController.i.mainCamera.WorldToScreenPoint(pos);
+        return ((Vector2)Input.mousePosition - screenPos).normalized;
     }
 }

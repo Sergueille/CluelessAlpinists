@@ -25,6 +25,9 @@ public class Player
         };
 
         deck = new List<ActionType>(allActions);
+
+        Util.ShuffleList(deck);
+
         hand = new List<Card>();
         discard = new List<ActionType>();
     }

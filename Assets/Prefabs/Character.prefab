@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4289312696910580544}
   - component: {fileID: 4289312696910580545}
   - component: {fileID: -5369932181205588143}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Character
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,7 +48,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
+  m_LinearDrag: 0.2
   m_AngularDrag: 2
   m_GravityScale: 1
   m_Material: {fileID: 6200000, guid: f66df181b0041bc4596dea8b1d8e494b, type: 2}
@@ -70,6 +70,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sr: {fileID: 4289312697113037044}
   rb: {fileID: 4289312696910580545}
+  bombPrefab: {fileID: 6995090590494050826, guid: 5e43a57444dc3ef409f59156bf47265b, type: 3}
+  grapplingPrefab: {fileID: 348430995599500768, guid: bba2ca853753f0d41aee7811f5c721d1, type: 3}
 --- !u!1 &4289312697113037047
 GameObject:
   m_ObjectHideFlags: 0
@@ -80,7 +82,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4289312697113037045}
   - component: {fileID: 4289312697113037044}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -164,7 +166,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4289312698312574278}
   - component: {fileID: 4289312698312574279}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
