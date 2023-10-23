@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,6 +29,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float grapplingMaxDuration = 6;
     [SerializeField] private float grapplingTargetDistance = 0.5f;
 
+    public Sprite[] itemsSprites;
+
     [NonSerialized] public int currentPlayerID;
 
 
@@ -38,6 +42,7 @@ public class GameManager : MonoBehaviour
     public float handCardsSpacing = 100;
     public MovementDescr cardDrawMovement;
     public MovementDescr cardDrawMovementRotation;
+    [SerializeField] private TextMeshProUGUI infoText;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -67,6 +72,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        infoText.text = "";
         StartRace(startInfos);
     }
 
@@ -91,6 +97,8 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(smallDelay);
             }
 
+            SetInfoText("Réordonnez les cartes");
+
             yield return new WaitUntil(() => shouldContinue); // TEST
             shouldContinue = false;
 
@@ -114,6 +122,8 @@ public class GameManager : MonoBehaviour
 
                 if (type == ActionType.jump)
                 {
+                    SetInfoText("Cliquez pour sauter");
+
                     while (true)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jumpForce;
@@ -133,6 +143,8 @@ public class GameManager : MonoBehaviour
                 {
                     yield return new WaitForFixedUpdate();
 
+                    SetInfoText("Maintenez pour vous propulser");
+
                     float fuel = jetpackFuel;
 
                     while (fuel > 0)
@@ -144,13 +156,23 @@ public class GameManager : MonoBehaviour
 
                             CurrentPlayerCharacter.AddForce(force);
                             fuel -= Time.fixedDeltaTime;
+
+                            CurrentPlayerCharacter.ToggleJetpackParticles(true, force);
+                        }
+                        else
+                        {
+                            CurrentPlayerCharacter.ToggleJetpackParticles(false, Vector2.right);
                         }
 
                         yield return new WaitForFixedUpdate();
                     }
+
+                    CurrentPlayerCharacter.ToggleJetpackParticles(false, Vector2.right);
                 }
                 else if (type == ActionType.bomb)
                 {                    
+                    SetInfoText("Cliquez pour lancer");
+
                     while (true)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * bombThrowForce;
@@ -168,7 +190,11 @@ public class GameManager : MonoBehaviour
                 }
                 else if (type == ActionType.balloon)
                 {
+                    SetInfoText("Cliquez pour éclater les ballons");
+
                     float startTime = Time.time;
+
+                    CurrentPlayerCharacter.ShowBalloons();
 
                     while (!Input.GetMouseButton(0) && Time.time < startTime + balloonDuration)
                     {
@@ -179,9 +205,13 @@ public class GameManager : MonoBehaviour
 
                         yield return new WaitForFixedUpdate();
                     }
+
+                    CurrentPlayerCharacter.HideBalloons();
                 }
                 else if (type == ActionType.grappling)
                 {
+                    SetInfoText("Cliquez pour lancer le grappin");
+
                     while (true)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * grapplingThrowForce;
@@ -199,6 +229,8 @@ public class GameManager : MonoBehaviour
 
                             yield return new WaitUntil(() => touchedSomething && !Input.GetMouseButton(0));
                             yield return new WaitForFixedUpdate();
+                            
+                            SetInfoText("Cliquez pour lâcher le grappin");
 
                             float startTime = Time.time;
                             bool nearEnough = false;
@@ -221,7 +253,9 @@ public class GameManager : MonoBehaviour
 
             CurrentPlayer.DiscardHand();
 
-            yield return new WaitForSeconds(1);
+            SetInfoText("");
+
+            yield return new WaitForSeconds(2);
             
             // Next turn!
             currentPlayerID++;
@@ -284,5 +318,10 @@ public class GameManager : MonoBehaviour
     {
         Vector2 screenPos = CameraController.i.mainCamera.WorldToScreenPoint(pos);
         return ((Vector2)Input.mousePosition - screenPos).normalized;
+    }
+
+    public void SetInfoText(string text)
+    {
+        infoText.text = text;
     }
 }

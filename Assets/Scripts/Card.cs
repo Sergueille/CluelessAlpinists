@@ -15,7 +15,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [NonSerialized] public bool moveOnHover = false;
     [NonSerialized] public bool draggable = false;
 
-    [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private Image icon;
     [SerializeField] private Image image;
     [SerializeField] private Image darkImage;
     [SerializeField] private MovementDescr hoverMovement;
@@ -33,7 +33,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void Init(ActionType type)
     {
         this.type = type;
-        text.text = type.ToString(); // TEST
+        icon.sprite = GameManager.i.itemsSprites[(int)type]; // TEST
 
         darkImage.color = new Color(0, 0, 0, 0);
     }
@@ -148,9 +148,12 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        hoverMovement.TryCancel();
-        hoverMovement.DoReverse(t => image.transform.localPosition = Vector3.up * t);
-        hovered = false;
+        if (moveOnHover) 
+        {
+            hoverMovement.TryCancel();
+            hoverMovement.DoReverse(t => image.transform.localPosition = Vector3.up * t);
+            hovered = false;
+        }
     }
 
     public void Dark()
