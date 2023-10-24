@@ -5,6 +5,7 @@ using System;
 public class Grappling : MonoBehaviour
 {
     public Rigidbody2D rb;
+    [SerializeField] private Collider2D grapplingCollider;
 
     public Action collisionCallback;
 
@@ -37,10 +38,11 @@ public class Grappling : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D coll) 
     {
-        Destroy(rb);
         collisionCallback();
         attached = true;
         parent = coll.transform;
+        Destroy(rb);
+        Destroy(grapplingCollider);
         relativePosition = parent.InverseTransformPoint(transform.position);
     }
 }

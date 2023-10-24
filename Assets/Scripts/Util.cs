@@ -5,7 +5,7 @@ using System.Text;
 
 public enum ActionType
 {
-    jump, jetpack, grappling, bomb, balloon
+    jump, jetpack, grappling, bomb, balloon, maxValue
 }
 
 public static class Util

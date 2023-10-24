@@ -12,7 +12,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerInfo[] startInfos; // TEST
     [NonSerialized] public Player[] players;
 
+    [NonSerialized] public BonusType bonusAtEndOfTurn = BonusType.none;
+
     public int cardsInHand = 3; // How many cards the players should draw
+    public int bonusCardCount = 3; // How many cards the players should draw
     [SerializeField] private float jumpForce = 10;
     [SerializeField] private float jumpVerticalMultiplier = 2;
     [SerializeField] private float jetpackForce = 8;
@@ -89,6 +92,8 @@ public class GameManager : MonoBehaviour
 
         while (true)
         {
+            bonusAtEndOfTurn = BonusType.none;
+
             for (int i = 0; i < cardsInHand; i++)
             {
                 bool couldDraw = CurrentPlayer.DrawAction();
@@ -253,6 +258,46 @@ public class GameManager : MonoBehaviour
 
             CurrentPlayer.DiscardHand();
 
+            if (bonusAtEndOfTurn == BonusType.exchange)
+            {
+                SetInfoText("Choisissez des cartes a échanger");
+
+                Card[] deckCards = new Card[CurrentPlayer.allActions.Count];
+                for (int i = 0; i < CurrentPlayer.allActions.Count; i++)
+                {
+                    Card card = InstantiateCard(CurrentPlayer.allActions[i]);
+                    card.moveOnHover = true;
+                    deckCards[i] = card;
+                    card.transform.position = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
+                } 
+
+                ActionType[] randomActions = GetRandomActions();
+                Card[] randomCards = new Card[randomActions.Length];
+                for (int i = 0; i < CurrentPlayer.allActions.Count; i++)
+                {
+                    Card card = InstantiateCard(randomActions[i]); // BUG here?
+                    card.moveOnHover = true;
+                    randomCards[i] = card;
+                    card.transform.position = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition + 300, 0); // TEST
+                } 
+
+                yield return new WaitForSeconds(5);
+
+                for (int i = 0; i < deckCards.Length; i++)
+                {
+                    Destroy(deckCards[i]);
+                }                
+                
+                for (int i = 0; i < randomCards.Length; i++)
+                {
+                    Destroy(randomCards[i]);
+                }
+            }
+            else if (bonusAtEndOfTurn == BonusType.plus2)
+            {
+
+            }
+
             SetInfoText("");
 
             yield return new WaitForSeconds(2);
@@ -323,5 +368,16 @@ public class GameManager : MonoBehaviour
     public void SetInfoText(string text)
     {
         infoText.text = text;
+    }
+
+    public ActionType[] GetRandomActions()
+    {
+        ActionType[] res = new ActionType[bonusCardCount];
+        for (int i = 0; i < bonusCardCount; i++)
+        {
+            res[i] = (ActionType)UnityEngine.Random.Range(0, (int)ActionType.maxValue);
+        }
+
+        return res;
     }
 }

@@ -4888,8 +4888,8 @@ MonoBehaviour:
   bombPrefab: {fileID: 6995090590494050826, guid: 5e43a57444dc3ef409f59156bf47265b, type: 3}
   grapplingPrefab: {fileID: 348430995599500768, guid: bba2ca853753f0d41aee7811f5c721d1, type: 3}
   lineRenderer: {fileID: 4730051767878314920}
-  linePointsDeltaTime: 0.02
-  linePointsCount: 70
+  linePointsDeltaTime: 0.03
+  linePointsCount: 100
   dashedLineOffsetSpeed: -1
   dashedFadeSpeed: 2
   balloons: {fileID: 5900648445083634875}
@@ -4972,8 +4972,8 @@ SpriteRenderer:
   m_SortingLayerID: -124694567
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 325789747, guid: 10cb358cffa196144b30236911a33cbb, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

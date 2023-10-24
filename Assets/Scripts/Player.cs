@@ -112,6 +112,6 @@ public class Player
 [Serializable]
 public struct PlayerInfo
 {
-    public Color color;
+    public Sprite avatar;
     public string name;
 }

@@ -15,6 +15,7 @@ public class Character : MonoBehaviour
     [SerializeField] private int linePointsCount = 150;
     [SerializeField] private float dashedLineOffsetSpeed = 0.5f;
     [SerializeField] private float dashedFadeSpeed = 0.5f;
+    [SerializeField] private float grapplingStartPosition = 0.5f;
     [SerializeField] private SpriteRenderer balloons;
     [SerializeField] private MovementDescr balloonsScaleMovement;
     [SerializeField] private ParticleSystem balloonsParticles;
@@ -22,12 +23,10 @@ public class Character : MonoBehaviour
 
     private int contactCount = 0;
 
-    private bool showBallon = false;
-
     public void Init(Player owner) 
     {
         this.owner = owner;
-        sr.color = owner.info.color;
+        sr.sprite = owner.info.avatar;
         lineRenderer.gameObject.SetActive(false);
         balloons.color = new Color(1, 1, 1, 0);
     }
@@ -116,7 +115,7 @@ public class Character : MonoBehaviour
     public Grappling SpawnGrappling(Vector2 force, Action callback)
     {
         Grappling grappling = Instantiate(grapplingPrefab).GetComponent<Grappling>();
-        grappling.transform.position = transform.position;
+        grappling.transform.position = transform.position + (Vector3)force.normalized * grapplingStartPosition;
         grappling.rb.AddForce(force, ForceMode2D.Impulse);
         grappling.collisionCallback = callback;
         return grappling;
@@ -130,5 +129,15 @@ public class Character : MonoBehaviour
     private void OnCollisionExit2D(Collision2D coll)
     {
         contactCount--;
+    }
+
+    private void OnTriggerEnter2D(Collider2D coll)
+    {
+        Bonus b = coll.gameObject.GetComponent<Bonus>();
+        if (b != null && b.type != BonusType.none)
+        {
+            GameManager.i.bonusAtEndOfTurn = b.type;
+            b.Touch();
+        }
     }
 }
