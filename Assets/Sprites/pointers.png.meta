@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: fd59ac7ff76745f4fbb86928b13712c9
+guid: 9bbbe53348bc410419d1799bb8c7168b
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -140,126 +140,64 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: terrain_0
-      rect:
-        serializedVersion: 2
-        x: 7
-        y: 242
-        width: 250
-        height: 164
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: 125, y: 27}
-        - {x: 116, y: 60}
-        - {x: 62, y: 82}
-        - {x: -52, y: 82}
-        - {x: -125, y: 38}
-        - {x: -125, y: -12}
-        - {x: -109, y: -33}
-        - {x: -70, y: -67}
-        - {x: -21, y: -82}
-        - {x: 38, y: -82}
-        - {x: 56, y: -81}
-        - {x: 122, y: -33}
-        - {x: 125, y: -24}
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ea25abb2dc403e7408ebae04066b13be
-      internalID: 589942579
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: terrain_1
-      rect:
-        serializedVersion: 2
-        x: 202
-        y: 385
-        width: 298
-        height: 196
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: 130.5, y: 98}
-        - {x: 76.5, y: 98}
-        - {x: -58, y: 98}
-        - {x: -148, y: 94}
-        - {x: -149, y: 3}
-        - {x: -126, y: -39}
-        - {x: -34, y: -98}
-        - {x: 130, y: -42}
-        - {x: 135, y: 26}
-        - {x: 148, y: 86}
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cb2980201f634e44c82016c2d58c9ed3
-      internalID: 1546163596
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: terrain_2
-      rect:
-        serializedVersion: 2
-        x: 320
-        y: 3
-        width: 622
-        height: 443
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -27, y: 221.5}
-        - {x: -107, y: 211.5}
-        - {x: -249, y: 122.5}
-        - {x: -310, y: -13.5}
-        - {x: -311, y: -45.5}
-        - {x: -311, y: -173.5}
-        - {x: -214, y: -221.5}
-        - {x: 311, y: -221.5}
-        - {x: 311, y: 41.5}
-        - {x: 119, y: 221.5}
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 339688277367982478b989b25757b913
-      internalID: 1781369102
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: terrain_3
+      name: pointers_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 257
-        height: 206
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        y: 1
+        width: 39
+        height: 70
+      alignment: 9
+      pivot: {x: 0.1441137, y: 0.89896625}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: 80.5, y: 103}
-        - {x: -98.5, y: 103}
-        - {x: -128.5, y: 61}
-        - {x: -128.5, y: -79}
-        - {x: -72.5, y: -103}
-        - {x: 32.5, y: -103}
-        - {x: 128.5, y: -86}
-        - {x: 128.5, y: 53}
+      outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 98b85af12c519e64eb5f150049c753c6
-      internalID: 998690277
+      spriteID: 8c2a02995a8a5264aa08cf2f9251851a
+      internalID: 2029992846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pointers_1
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 4
+        width: 62
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f42d68e2e366c534eba9251cfc65b78b
+      internalID: 719746356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pointers_5
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 0
+        width: 69
+        height: 70
+      alignment: 9
+      pivot: {x: 0.4951437, y: 0.50000006}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11ad3a7e86aa9094d96e20c7265654ec
+      internalID: 1663794654
       vertices: []
       indices: 
       edges: []
@@ -273,14 +211,18 @@ TextureImporter:
     indices: 
     edges: []
     weights: []
-    secondaryTextures:
-    - texture: {fileID: 2800000, guid: db421e4527ae09b498aecebc1d0e454f, type: 3}
-      name: _Data
+    secondaryTextures: []
     nameFileIdTable:
-      terrain_2: 1781369102
-      terrain_3: 998690277
-      terrain_1: 1546163596
-      terrain_0: 589942579
+      pointers_3: 1793622038
+      pointers_7: 1869021913
+      pointers_0: 2029992846
+      pointers_1: 719746356
+      pointers_2: -84540933
+      pointers_8: -1427704861
+      pointers_9: -1202195739
+      pointers_5: 1663794654
+      pointers_6: 1670912791
+      pointers_4: -898272941
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

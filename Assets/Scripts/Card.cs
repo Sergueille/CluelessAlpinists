@@ -15,6 +15,8 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [NonSerialized] public bool moveOnHover = false;
     [NonSerialized] public bool draggable = false;
 
+    public Action<Card> clickCallback;
+
     [SerializeField] private Image icon;
     [SerializeField] private Image image;
     [SerializeField] private Image darkImage;
@@ -28,6 +30,10 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     private Vector2 dragStartMousePosition;
     private Vector3 dragStartPosition;
     private int lastDragIndex;
+
+    private PointerType typeBeforeEntering;
+
+    private bool darkened;
 
 
     public void Init(ActionType type)
@@ -95,6 +101,11 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                 lastDragIndex = index;
             }
         }
+
+        if (hovered && Input.GetMouseButtonDown(0) && clickCallback != null) 
+        {
+            clickCallback(this);
+        }
     }
 
     public void ChangePositionInHand(int targetIndex)
@@ -136,11 +147,17 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (moveOnHover) 
+        if (moveOnHover && !hovered) 
         {
             hoverMovement.TryCancel();
             hoverMovement.Do(t => image.transform.localPosition = Vector3.up * t);
             transform.SetAsLastSibling();
+        }
+
+        if (clickCallback == null && !draggable)
+        {
+            typeBeforeEntering = GameManager.i.pointerType;
+            GameManager.i.SetPointerType(PointerType.notAllowed);
         }
 
         hovered = true;
@@ -148,26 +165,39 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (moveOnHover) 
+        if (moveOnHover && hovered) 
         {
             hoverMovement.TryCancel();
             hoverMovement.DoReverse(t => image.transform.localPosition = Vector3.up * t);
-            hovered = false;
         }
+
+        if (clickCallback == null && !draggable)
+        {
+            GameManager.i.SetPointerType(typeBeforeEntering);
+        }
+
+        hovered = false;
     }
 
     public void Dark()
     {
+        if (darkened) return;
+
         darkLightMovement.Do(t => darkImage.color = new Color(0, 0, 0, t));
+        darkened = true;
     }
 
     public void Light()
     {
+        if (!darkened) return;
+
         darkLightMovement.DoReverse(t => darkImage.color = new Color(0, 0, 0, t));
+        darkened = false;
     }
 
     private void OnDestroy()
     {
         hoverMovement.TryCancel();
+        darkLightMovement.TryCancel();
     }
 }   

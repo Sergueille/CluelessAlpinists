@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-[Serializable]
 public class Player
 {
     public PlayerInfo info;
@@ -12,6 +11,8 @@ public class Player
     public List<ActionType> deck;
     public List<Card> hand;
     public List<ActionType> discard;
+
+    public bool finished = false;
 
     public void SetDefaultCards()
     {
@@ -97,15 +98,28 @@ public class Player
         hand.Clear();
     }
 
-    public void RemoveCardFromHand(Card card)
+    public void RemoveCard(Card card)
     {
-        int index = hand.IndexOf(card);
+        int indexHand = hand.IndexOf(card);
+        int indexDeck = deck.IndexOf(card.type);
+        int indexDiscard = discard.IndexOf(card.type);
 
-        if (index == -1) throw new Exception("Card not in hand!");
+        if (indexHand != -1 )
+        {
+            hand.RemoveAt(indexHand);
+            GameObject.Destroy(card);
+        }
+        else if (indexDiscard != -1)
+        {
+            discard.RemoveAt(indexDiscard);
+        }
+        else if (indexDeck != -1)
+        {
+            deck.RemoveAt(indexDeck);
+        } 
+        else throw new Exception("Card is not owned by player!");
 
-        hand.RemoveAt(index);
-        allActions.RemoveAt(allActions.IndexOf(card.type));
-        GameObject.Destroy(card);
+        allActions.Remove(card.type);
     }
 }
 

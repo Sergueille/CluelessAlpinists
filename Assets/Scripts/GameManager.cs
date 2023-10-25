@@ -5,6 +5,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 
+public enum PointerType
+{
+    normal, aim, notAllowed
+}
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager i;
@@ -31,6 +36,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float grapplingForce = 13;
     [SerializeField] private float grapplingMaxDuration = 6;
     [SerializeField] private float grapplingTargetDistance = 0.5f;
+    [SerializeField] private float turnEndDelay = 2.1f;
+    [SerializeField] private float turnEndVelocityThreshold = 1.0f;
 
     public Sprite[] itemsSprites;
 
@@ -46,10 +53,20 @@ public class GameManager : MonoBehaviour
     public MovementDescr cardDrawMovement;
     public MovementDescr cardDrawMovementRotation;
     [SerializeField] private TextMeshProUGUI infoText;
+    [SerializeField] private SpriteRenderer pointer;
+    [SerializeField] private Sprite[] pointers;
 
     [SerializeField] private float smallDelay = 0.1f;
 
     [NonSerialized] public bool shouldContinue;
+
+    private Card selectedExchangeNewCard = null;
+    private Card selectedExchangeDeckCard = null;
+    private bool grapplingTouchedSomething = false;
+
+    private Coroutine raceCoroutine;
+
+    [NonSerialized] public PointerType pointerType = PointerType.normal;
 
 
     public int PlayerCount
@@ -77,19 +94,27 @@ public class GameManager : MonoBehaviour
     {
         infoText.text = "";
         StartRace(startInfos);
+
+        Cursor.visible = false;
+    }
+
+    private void Update()
+    {
+        Vector3 pointerPosition = CameraController.i.mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        pointerPosition.z = 0;
+        pointer.transform.position = pointerPosition;
+        Cursor.visible = false;
     }
 
     private void StartRace(PlayerInfo[] infos)
     {
-        StartCoroutine(StartRaceCoroutine(infos));
+        CreatePlayers(infos);
+        currentPlayerID = 0;
+        raceCoroutine = StartCoroutine(RaceCoroutine());
     } 
 
-    public IEnumerator StartRaceCoroutine(PlayerInfo[] infos)
+    public IEnumerator RaceCoroutine()
     {
-        CreatePlayers(infos);
-
-        currentPlayerID = 0;
-
         while (true)
         {
             bonusAtEndOfTurn = BonusType.none;
@@ -128,6 +153,7 @@ public class GameManager : MonoBehaviour
                 if (type == ActionType.jump)
                 {
                     SetInfoText("Cliquez pour sauter");
+                    SetPointerType(PointerType.aim);
 
                     while (true)
                     {
@@ -149,6 +175,7 @@ public class GameManager : MonoBehaviour
                     yield return new WaitForFixedUpdate();
 
                     SetInfoText("Maintenez pour vous propulser");
+                    SetPointerType(PointerType.aim);
 
                     float fuel = jetpackFuel;
 
@@ -174,9 +201,10 @@ public class GameManager : MonoBehaviour
 
                     CurrentPlayerCharacter.ToggleJetpackParticles(false, Vector2.right);
                 }
-                else if (type == ActionType.bomb)
-                {                    
+                else if (type == ActionType.bomb || type == ActionType.invertedBomb)
+                {
                     SetInfoText("Cliquez pour lancer");
+                    SetPointerType(PointerType.aim);
 
                     while (true)
                     {
@@ -188,7 +216,7 @@ public class GameManager : MonoBehaviour
 
                         if (Input.GetMouseButton(0))
                         {
-                            CurrentPlayerCharacter.SpawnBomb(force);
+                            CurrentPlayerCharacter.SpawnBomb(force, type == ActionType.invertedBomb);
                             break;
                         }
                     }
@@ -216,6 +244,7 @@ public class GameManager : MonoBehaviour
                 else if (type == ActionType.grappling)
                 {
                     SetInfoText("Cliquez pour lancer le grappin");
+                    SetPointerType(PointerType.aim);
 
                     while (true)
                     {
@@ -227,14 +256,16 @@ public class GameManager : MonoBehaviour
 
                         if (Input.GetMouseButton(0))
                         {
-                            bool touchedSomething = false;
+                            grapplingTouchedSomething = false;
                             Grappling grappling = CurrentPlayerCharacter.SpawnGrappling(force, () => {
-                                touchedSomething = true;
+                                grapplingTouchedSomething = true;
                             });
 
-                            yield return new WaitUntil(() => touchedSomething && !Input.GetMouseButton(0));
+                            yield return new WaitUntil(() => grapplingTouchedSomething && !Input.GetMouseButton(0));
                             yield return new WaitForFixedUpdate();
                             
+                            SetPointerType(PointerType.normal);
+
                             SetInfoText("Cliquez pour lâcher le grappin");
 
                             float startTime = Time.time;
@@ -248,19 +279,28 @@ public class GameManager : MonoBehaviour
                                 nearEnough = delta.magnitude < grapplingTargetDistance;
                             }
 
+                            grappling.RemoveRope();
+
                             break;
                         }
                     }
                 }
 
+                SetPointerType(PointerType.normal);
                 card.Dark();
             }
 
             CurrentPlayer.DiscardHand();
 
+            yield return new WaitForSeconds(turnEndDelay);
+            yield return new WaitUntil(() => CurrentPlayerCharacter.rb.velocity.magnitude < turnEndVelocityThreshold);
+
             if (bonusAtEndOfTurn == BonusType.exchange)
             {
                 SetInfoText("Choisissez des cartes a échanger");
+
+                selectedExchangeNewCard = null;
+                selectedExchangeDeckCard = null;
 
                 Card[] deckCards = new Card[CurrentPlayer.allActions.Count];
                 for (int i = 0; i < CurrentPlayer.allActions.Count; i++)
@@ -268,29 +308,50 @@ public class GameManager : MonoBehaviour
                     Card card = InstantiateCard(CurrentPlayer.allActions[i]);
                     card.moveOnHover = true;
                     deckCards[i] = card;
-                    card.transform.position = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
+                    card.transform.localPosition = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
+                    card.clickCallback = c => {
+                        selectedExchangeDeckCard = c;
+                        for (int i = 0; i < deckCards.Length; i++)
+                        {
+                            if (deckCards[i] != c) deckCards[i].Dark();
+                            else c.Light(); 
+                        }
+                    };
                 } 
 
                 ActionType[] randomActions = GetRandomActions();
                 Card[] randomCards = new Card[randomActions.Length];
-                for (int i = 0; i < CurrentPlayer.allActions.Count; i++)
+                for (int i = 0; i < randomActions.Length; i++)
                 {
-                    Card card = InstantiateCard(randomActions[i]); // BUG here?
+                    Card card = InstantiateCard(randomActions[i]);
                     card.moveOnHover = true;
                     randomCards[i] = card;
-                    card.transform.position = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition + 300, 0); // TEST
+                    card.transform.localPosition = new Vector3(GetHandXPosition(i, randomActions.Length), handYPosition + 300, 0); // TEST
+                    card.clickCallback = c => {
+                        selectedExchangeNewCard = c;
+                        for (int i = 0; i < randomCards.Length; i++)
+                        {
+                            if (randomCards[i] != c) randomCards[i].Dark();
+                            else c.Light(); 
+                        }
+                    };
                 } 
 
-                yield return new WaitForSeconds(5);
+                yield return new WaitUntil(() => selectedExchangeNewCard != null && selectedExchangeDeckCard != null);
+
+                CurrentPlayer.RemoveCard(selectedExchangeDeckCard);
+                CurrentPlayer.AddAction(selectedExchangeNewCard.type);
+
+                yield return new WaitForSeconds(smallDelay);
 
                 for (int i = 0; i < deckCards.Length; i++)
                 {
-                    Destroy(deckCards[i]);
+                    Destroy(deckCards[i].gameObject);
                 }                
                 
                 for (int i = 0; i < randomCards.Length; i++)
                 {
-                    Destroy(randomCards[i]);
+                    Destroy(randomCards[i].gameObject);
                 }
             }
             else if (bonusAtEndOfTurn == BonusType.plus2)
@@ -299,12 +360,13 @@ public class GameManager : MonoBehaviour
             }
 
             SetInfoText("");
-
-            yield return new WaitForSeconds(2);
+            bonusAtEndOfTurn = BonusType.none;
             
-            // Next turn!
-            currentPlayerID++;
-            currentPlayerID %= PlayerCount;
+            // Next turn! (repeat if players have finished race)
+            do {
+                currentPlayerID++;
+                currentPlayerID %= PlayerCount;
+            } while(CurrentPlayer.finished);
         }
     }
 
@@ -373,11 +435,34 @@ public class GameManager : MonoBehaviour
     public ActionType[] GetRandomActions()
     {
         ActionType[] res = new ActionType[bonusCardCount];
+        bool[] alreadyPicked = new bool[(int)ActionType.maxValue];
         for (int i = 0; i < bonusCardCount; i++)
         {
-            res[i] = (ActionType)UnityEngine.Random.Range(0, (int)ActionType.maxValue);
+            ActionType newAction = (ActionType)UnityEngine.Random.Range(0, (int)ActionType.maxValue);
+            
+            if (alreadyPicked[(int)newAction])
+            {
+                i--;
+                continue;
+            }
+
+            res[i] = newAction;
+            alreadyPicked[(int)newAction] = true;
         }
 
         return res;
+    }
+
+    public void SetPointerType(PointerType type)
+    {
+        pointerType = type;
+        pointer.sprite = pointers[(int)type];
+    }
+
+    public void PlayerFinishesRace(Player player)
+    {
+        player.finished = true;
+        MapManager.i.finishParticles.Play();
+        CameraController.i.followCharacter = false;
     }
 }

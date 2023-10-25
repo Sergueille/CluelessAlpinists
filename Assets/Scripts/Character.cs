@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class Character : MonoBehaviour
+public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [NonSerialized] public Player owner;
 
     [SerializeField] private SpriteRenderer sr;
     public Rigidbody2D rb;
     [SerializeField] private GameObject bombPrefab;
+    [SerializeField] private GameObject invertedBombPrefab;
     [SerializeField] private GameObject grapplingPrefab;
     [SerializeField] private LineRenderer lineRenderer;
     [SerializeField] private float linePointsDeltaTime = 0.1f;
@@ -20,15 +23,38 @@ public class Character : MonoBehaviour
     [SerializeField] private MovementDescr balloonsScaleMovement;
     [SerializeField] private ParticleSystem balloonsParticles;
     [SerializeField] private ParticleSystem jetpackParticles;
+    [SerializeField] private SpriteRenderer eyesWhiteSpriteRenderer;
+    [SerializeField] private SpriteRenderer eyesBlackSpriteRenderer;
+    [SerializeField] private Sprite eyesOpened;
+    [SerializeField] private Sprite eyesClosed;
+    [SerializeField] private float eyesWhiteDistance;
+    [SerializeField] private float eyesBlackDistance;
+    [SerializeField] private float eyesClosedDuration;
+    [SerializeField] private float eyesClosedInterval;
+    [SerializeField] private float minVelocityForEyesClosed = 1.5f;
+    [SerializeField] private TextMeshPro nameText;
+    [SerializeField] private MovementDescr nameTextMovement;
+    [SerializeField] private SpriteRenderer turnArrow;
+    [SerializeField] private float turnArrowSineAmplitude;
+    [SerializeField] private float turnArrowSineFrequency;
 
     private int contactCount = 0;
+
+    private float closeEyesTime = 0;
+
+    private Vector2 arrowStartPosition;
 
     public void Init(Player owner) 
     {
         this.owner = owner;
         sr.sprite = owner.info.avatar;
+        nameText.text = owner.info.name;
+        nameText.gameObject.SetActive(false);
+
         lineRenderer.gameObject.SetActive(false);
         balloons.color = new Color(1, 1, 1, 0);
+
+        arrowStartPosition = turnArrow.transform.localPosition;
     }
 
     private void Update()
@@ -36,15 +62,37 @@ public class Character : MonoBehaviour
         if (GameManager.i.CurrentPlayerCharacter == this)
         {
             Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer("CurrentPlayerCharacter"));
+            turnArrow.color = new Color(1, 1, 1, 1);
+            turnArrow.transform.position = transform.position + (Vector3)arrowStartPosition + Vector3.up * turnArrowSineAmplitude * Mathf.Sin(Time.time * turnArrowSineFrequency);
+            turnArrow.transform.rotation = Quaternion.identity;
         }
         else
         {
             Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer("Character"));
+            turnArrow.color = new Color(1, 1, 1, 0);
         }
 
         lineRenderer.material.color = new Color(lineRenderer.material.color.r, lineRenderer.material.color.g, lineRenderer.material.color.b, lineRenderer.material.color.a - Time.deltaTime * dashedFadeSpeed);
 
         balloons.transform.eulerAngles = new Vector3(0, 0, 0);
+
+        // Eyes
+        Vector2 pointerDir = GameManager.i.GetPointerDirection(transform.position);
+        eyesWhiteSpriteRenderer.transform.position = transform.position + (Vector3)pointerDir * eyesWhiteDistance;
+        eyesWhiteSpriteRenderer.transform.rotation = Quaternion.identity;
+        eyesBlackSpriteRenderer.transform.position = transform.position + (Vector3)pointerDir * eyesBlackDistance;
+        eyesBlackSpriteRenderer.transform.rotation = Quaternion.identity;
+
+        if ((Time.time - closeEyesTime) % eyesClosedInterval < eyesClosedDuration)
+        {
+            eyesWhiteSpriteRenderer.sprite = eyesClosed;
+            eyesBlackSpriteRenderer.enabled = false;
+        }
+        else
+        {
+            eyesWhiteSpriteRenderer.sprite = eyesOpened;
+            eyesBlackSpriteRenderer.enabled = true;
+        }
     }
 
     public bool IsTouchingGround()
@@ -105,9 +153,9 @@ public class Character : MonoBehaviour
             jetpackParticles.transform.eulerAngles = new Vector3(Vector2.SignedAngle(Vector2.right, direction), -90, -90);
     }
 
-    public void SpawnBomb(Vector2 force)
+    public void SpawnBomb(Vector2 force, bool inverted)
     {
-        GameObject bomb = Instantiate(bombPrefab);
+        GameObject bomb = Instantiate(inverted ? invertedBombPrefab : bombPrefab);
         bomb.transform.position = transform.position;
         bomb.GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Impulse);
     }
@@ -118,12 +166,18 @@ public class Character : MonoBehaviour
         grappling.transform.position = transform.position + (Vector3)force.normalized * grapplingStartPosition;
         grappling.rb.AddForce(force, ForceMode2D.Impulse);
         grappling.collisionCallback = callback;
+        grappling.owner = transform;
         return grappling;
     }
 
     private void OnCollisionEnter2D(Collision2D coll)
     {
         contactCount++;
+
+        if (coll.relativeVelocity.sqrMagnitude > minVelocityForEyesClosed * minVelocityForEyesClosed)
+        {
+            closeEyesTime = Time.time;
+        }
     }
 
     private void OnCollisionExit2D(Collision2D coll)
@@ -136,8 +190,38 @@ public class Character : MonoBehaviour
         Bonus b = coll.gameObject.GetComponent<Bonus>();
         if (b != null && b.type != BonusType.none)
         {
-            GameManager.i.bonusAtEndOfTurn = b.type;
+            if (owner == GameManager.i.CurrentPlayer)
+                GameManager.i.bonusAtEndOfTurn = b.type;
+
             b.Touch();
         }
+
+        Trigger t = coll.gameObject.GetComponent<Trigger>();
+        if (t != null)
+        {
+            t.triggerEvent.Invoke();
+        }
+
+        if (coll.gameObject == MapManager.i.finishTrigger)
+        {
+            GameManager.i.PlayerFinishesRace(owner);
+        }
+    }
+        
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        nameText.gameObject.SetActive(true);
+        nameTextMovement.Do(t => nameText.fontSize = t);
+        
+        eyesWhiteSpriteRenderer.sprite = eyesClosed;
+        eyesBlackSpriteRenderer.enabled = false;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        nameTextMovement.DoReverse(t => nameText.fontSize = t).setOnComplete(() => nameText.gameObject.SetActive(false));
+        
+        eyesWhiteSpriteRenderer.sprite = eyesOpened;
+        eyesBlackSpriteRenderer.enabled = true;
     }
 }

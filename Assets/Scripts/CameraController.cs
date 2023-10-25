@@ -8,6 +8,8 @@ public class CameraController : MonoBehaviour
     public Camera mainCamera;
     public Canvas canvas;
 
+    public bool followCharacter = true;
+
     [SerializeField] private Vector2 offset;
     [SerializeField] private float cameraSpeed;
 
@@ -15,6 +17,8 @@ public class CameraController : MonoBehaviour
     private float startZ;
 
     private RectTransform canvasTransform;
+
+    private Vector2 lastTargetPosition;
 
     public Vector2 CanvasSize
     {
@@ -30,10 +34,14 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        Vector2 targetPosition = GameManager.i.CurrentPlayerCharacter.transform.position;
-        Vector2 finalPosition = targetPosition + offset * mainCamera.orthographicSize;
+        if (followCharacter)
+        {
+            Vector2 targetPosition = GameManager.i.CurrentPlayerCharacter.transform.position;
+            Vector2 finalPosition = targetPosition + offset * mainCamera.orthographicSize;
+            lastTargetPosition = finalPosition;
+        }
 
-        Vector2 smoothedPos = Vector2.SmoothDamp(transform.position, finalPosition, ref cameraVelocity, cameraSpeed);
+        Vector2 smoothedPos = Vector2.SmoothDamp(transform.position, lastTargetPosition, ref cameraVelocity, cameraSpeed);
         transform.position = new Vector3(smoothedPos.x, smoothedPos.y, startZ);
     }
 }

@@ -18,7 +18,7 @@ public class Bonus : MonoBehaviour
     
     [SerializeField] private MovementDescr disappearMovement;
 
-    private void Udpate()
+    private void Update()
     {
         if (rotateSprite)
         {

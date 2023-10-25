@@ -6,6 +6,9 @@ public class MapManager : MonoBehaviour
     public static MapManager i;
 
     public Transform startZone;
+
+    public GameObject finishTrigger;
+    public ParticleSystem finishParticles;
     
     private void Awake()
     {

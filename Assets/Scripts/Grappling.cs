@@ -4,24 +4,44 @@ using System;
 
 public class Grappling : MonoBehaviour
 {
+    public Transform owner;
     public Rigidbody2D rb;
     [SerializeField] private Collider2D grapplingCollider;
 
     public Action collisionCallback;
 
     [SerializeField] private Transform spriteTransform;
+    [SerializeField] private LineRenderer rope;
 
     private bool attached = false;
-    private Transform parent = null;
+    private Transform attachParent = null;
     private Vector2 relativePosition;
 
     private Vector2 lastPosition;
+
+    private MovementDescr ropeDisappear;
+    private bool ropeDisappeared = false;
+
+    public void RemoveRope()
+    {
+        Color startColor = rope.startColor;
+        ropeDisappear.DoNormalized(t => { 
+            rope.startColor = new Color(startColor.r, startColor.g, startColor.b, 1 - t);
+            rope.endColor = new Color(startColor.r, startColor.g, startColor.b, 1 - t);
+        }).setOnComplete(() => ropeDisappeared = true);
+    }
 
     private void Update()
     {
         if (attached)
         {
-            transform.position = parent.TransformPoint(relativePosition);
+            transform.position = attachParent.TransformPoint(relativePosition);
+        }
+
+        if (!ropeDisappeared)
+        {
+            rope.positionCount = 2;
+            rope.SetPositions(new Vector3[] { transform.InverseTransformPoint(owner.position), Vector3.zero});
         }
     }
 
@@ -40,9 +60,9 @@ public class Grappling : MonoBehaviour
     {
         collisionCallback();
         attached = true;
-        parent = coll.transform;
+        attachParent = coll.transform;
         Destroy(rb);
         Destroy(grapplingCollider);
-        relativePosition = parent.InverseTransformPoint(transform.position);
+        relativePosition = attachParent.InverseTransformPoint(transform.position);
     }
 }
