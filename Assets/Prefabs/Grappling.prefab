@@ -171,7 +171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   owner: {fileID: 0}
   rb: {fileID: 348430995599500770}
-  grapplingCollider: {fileID: 0}
+  grapplingCollider: {fileID: 348430994964503688}
   spriteTransform: {fileID: 348430994964503694}
   rope: {fileID: 5647821934305912517}
 --- !u!1 &4753952279671526115

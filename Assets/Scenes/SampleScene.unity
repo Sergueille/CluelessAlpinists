@@ -6403,7 +6403,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 94.5, y: 19.4, z: -10}
+  m_LocalPosition: {x: 7.48, y: -2.58, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6425,6 +6425,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 519420031}
   canvas: {fileID: 674295729}
+  followCharacter: 1
   offset: {x: 0, y: 0.2}
   cameraSpeed: 0.5
 --- !u!1 &521372366
@@ -13970,7 +13971,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1180992750}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.34, y: -4.46, z: 0}
+  m_LocalPosition: {x: 1.2, y: -4.37, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15918,7 +15919,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 10
   m_Sprite: {fileID: 1781369102, guid: fd59ac7ff76745f4fbb86928b13712c9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -15938,7 +15939,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1367358574}
   m_LocalRotation: {x: -0, y: -0, z: -0.97190374, w: -0.23537864}
-  m_LocalPosition: {x: 9.85, y: -8, z: 0}
+  m_LocalPosition: {x: 9.77, y: -7.86, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -23050,9 +23051,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startInfos:
   - avatar: {fileID: 2106092649, guid: 10cb358cffa196144b30236911a33cbb, type: 3}
-    name: Red
+    name: Kevin
   - avatar: {fileID: 186219427, guid: 10cb358cffa196144b30236911a33cbb, type: 3}
-    name: Blue
+    name: Michel
+  - avatar: {fileID: -347558388, guid: 10cb358cffa196144b30236911a33cbb, type: 3}
+    name: Mr. Patate
+  - avatar: {fileID: 812493305, guid: 10cb358cffa196144b30236911a33cbb, type: 3}
+    name: Hildegarde
   cardsInHand: 3
   bonusCardCount: 4
   jumpForce: 5.6
@@ -23099,6 +23104,11 @@ MonoBehaviour:
   - {fileID: 2029992846, guid: 9bbbe53348bc410419d1799bb8c7168b, type: 3}
   - {fileID: 1663794654, guid: 9bbbe53348bc410419d1799bb8c7168b, type: 3}
   - {fileID: 719746356, guid: 9bbbe53348bc410419d1799bb8c7168b, type: 3}
+  continueButton: {fileID: 173951342}
+  continueButtonMovement:
+    amplitude: 100
+    duration: 0.3
+    easeType: 19
   smallDelay: 0.2
 --- !u!1 &1894379369
 GameObject:
@@ -24185,7 +24195,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1959238909}
   m_LocalRotation: {x: -0, y: -0, z: -0.43035498, w: -0.9026598}
-  m_LocalPosition: {x: 5.6, y: -5.27, z: 0}
+  m_LocalPosition: {x: 5.87, y: -4.83, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

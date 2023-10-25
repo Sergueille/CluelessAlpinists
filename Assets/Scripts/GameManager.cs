@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
+using UnityEngine.UI;
 
 public enum PointerType
 {
@@ -55,6 +55,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI infoText;
     [SerializeField] private SpriteRenderer pointer;
     [SerializeField] private Sprite[] pointers;
+    [SerializeField] private Button continueButton;
+    [SerializeField] private MovementDescr continueButtonMovement;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -64,9 +66,13 @@ public class GameManager : MonoBehaviour
     private Card selectedExchangeDeckCard = null;
     private bool grapplingTouchedSomething = false;
 
+    private int playersFinished = 0;
+
     private Coroutine raceCoroutine;
 
     [NonSerialized] public PointerType pointerType = PointerType.normal;
+
+    private Vector3 continueButtonStartPosition;
 
 
     public int PlayerCount
@@ -83,7 +89,6 @@ public class GameManager : MonoBehaviour
     {
         get => players[currentPlayerID].character;
     }
-    
 
     private void Awake()
     {
@@ -96,6 +101,7 @@ public class GameManager : MonoBehaviour
         StartRace(startInfos);
 
         Cursor.visible = false;
+        continueButtonStartPosition = continueButton.transform.localPosition;
     }
 
     private void Update()
@@ -110,6 +116,7 @@ public class GameManager : MonoBehaviour
     {
         CreatePlayers(infos);
         currentPlayerID = 0;
+        playersFinished = 0;
         raceCoroutine = StartCoroutine(RaceCoroutine());
     } 
 
@@ -127,10 +134,16 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(smallDelay);
             }
 
+            // Show continue button
+            continueButtonMovement.DoReverse((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
+
             SetInfoText("Réordonnez les cartes");
 
-            yield return new WaitUntil(() => shouldContinue); // TEST
+            yield return new WaitUntil(() => shouldContinue || CurrentPlayer.finished); // TEST
             shouldContinue = false;
+
+            // Fide continue button
+            continueButtonMovement.Do((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
 
             // Darken cards
             foreach (Card card in CurrentPlayer.hand)
@@ -142,6 +155,8 @@ public class GameManager : MonoBehaviour
 
             foreach (Card card in CurrentPlayer.hand)
             {
+                if (CurrentPlayer.finished) break;
+
                 // Highlight card
                 card.Light();
                 card.transform.SetAsLastSibling();
@@ -155,7 +170,7 @@ public class GameManager : MonoBehaviour
                     SetInfoText("Cliquez pour sauter");
                     SetPointerType(PointerType.aim);
 
-                    while (true)
+                    while (true && !CurrentPlayer.finished)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jumpForce;
                         force.y *= jumpVerticalMultiplier;
@@ -179,7 +194,7 @@ public class GameManager : MonoBehaviour
 
                     float fuel = jetpackFuel;
 
-                    while (fuel > 0)
+                    while (fuel > 0 && !CurrentPlayer.finished)
                     {
                         if (Input.GetMouseButton(0))
                         {
@@ -206,7 +221,7 @@ public class GameManager : MonoBehaviour
                     SetInfoText("Cliquez pour lancer");
                     SetPointerType(PointerType.aim);
 
-                    while (true)
+                    while (true && !CurrentPlayer.finished)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * bombThrowForce;
                         force.y *= bombThrowVerticalMultiplier;
@@ -229,7 +244,7 @@ public class GameManager : MonoBehaviour
 
                     CurrentPlayerCharacter.ShowBalloons();
 
-                    while (!Input.GetMouseButton(0) && Time.time < startTime + balloonDuration)
+                    while (!Input.GetMouseButton(0) && Time.time < startTime + balloonDuration && !CurrentPlayer.finished)
                     {
                         if (CurrentPlayerCharacter.rb.velocity.y < balloonTargetVelocity)
                         {
@@ -246,7 +261,7 @@ public class GameManager : MonoBehaviour
                     SetInfoText("Cliquez pour lancer le grappin");
                     SetPointerType(PointerType.aim);
 
-                    while (true)
+                    while (true && !CurrentPlayer.finished)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * grapplingThrowForce;
                         force.y *= grapplingThrowVerticalMultiplier;
@@ -261,7 +276,7 @@ public class GameManager : MonoBehaviour
                                 grapplingTouchedSomething = true;
                             });
 
-                            yield return new WaitUntil(() => grapplingTouchedSomething && !Input.GetMouseButton(0));
+                            yield return new WaitUntil(() => (grapplingTouchedSomething && !Input.GetMouseButton(0)) || CurrentPlayer.finished);
                             yield return new WaitForFixedUpdate();
                             
                             SetPointerType(PointerType.normal);
@@ -270,7 +285,7 @@ public class GameManager : MonoBehaviour
 
                             float startTime = Time.time;
                             bool nearEnough = false;
-                            while (Time.time < startTime + grapplingMaxDuration && !nearEnough && !Input.GetMouseButton(0))
+                            while (Time.time < startTime + grapplingMaxDuration && !nearEnough && !Input.GetMouseButton(0) && !CurrentPlayer.finished)
                             {
                                 Vector2 delta = grappling.transform.position - CurrentPlayerCharacter.transform.position;
                                 CurrentPlayerCharacter.AddForce(grapplingForce * delta.normalized);
@@ -292,10 +307,13 @@ public class GameManager : MonoBehaviour
 
             CurrentPlayer.DiscardHand();
 
-            yield return new WaitForSeconds(turnEndDelay);
-            yield return new WaitUntil(() => CurrentPlayerCharacter.rb.velocity.magnitude < turnEndVelocityThreshold);
+            if (!CurrentPlayer.finished)
+            {
+                yield return new WaitForSeconds(turnEndDelay);
+                yield return new WaitUntil(() => CurrentPlayerCharacter.rb.velocity.magnitude < turnEndVelocityThreshold);
+            }
 
-            if (bonusAtEndOfTurn == BonusType.exchange)
+            if (!CurrentPlayer.finished && bonusAtEndOfTurn == BonusType.exchange)
             {
                 SetInfoText("Choisissez des cartes a échanger");
 
@@ -354,13 +372,16 @@ public class GameManager : MonoBehaviour
                     Destroy(randomCards[i].gameObject);
                 }
             }
-            else if (bonusAtEndOfTurn == BonusType.plus2)
-            {
-
-            }
 
             SetInfoText("");
             bonusAtEndOfTurn = BonusType.none;
+
+            // Wait a little before next turn
+            if (CurrentPlayer.finished)
+            {
+                yield return new WaitForSeconds(3);
+                CameraController.i.followCharacter = true;
+            }
             
             // Next turn! (repeat if players have finished race)
             do {
@@ -423,8 +444,13 @@ public class GameManager : MonoBehaviour
 
     public Vector2 GetPointerDirection(Vector2 pos)
     {
-        Vector2 screenPos = CameraController.i.mainCamera.WorldToScreenPoint(pos);
-        return ((Vector2)Input.mousePosition - screenPos).normalized;
+        return GetPointerDelta(pos).normalized;
+    }
+
+    public Vector2 GetPointerDelta(Vector2 pos)
+    {
+        Vector2 worldMousePos = CameraController.i.mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        return worldMousePos - pos;
     }
 
     public void SetInfoText(string text)
@@ -461,8 +487,20 @@ public class GameManager : MonoBehaviour
 
     public void PlayerFinishesRace(Player player)
     {
-        player.finished = true;
         MapManager.i.finishParticles.Play();
         CameraController.i.followCharacter = false;
+
+        Debug.Log(playersFinished);
+
+        playersFinished++;
+        if (playersFinished >= PlayerCount - 1)
+        {
+            StopCoroutine(raceCoroutine);
+            Debug.Log("Finished!");
+
+            // TODO
+        }
+
+        player.finished = true;
     }
 }

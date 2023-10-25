@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class Character : MonoBehaviour
 {
     [NonSerialized] public Player owner;
 
@@ -31,6 +30,7 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     [SerializeField] private float eyesBlackDistance;
     [SerializeField] private float eyesClosedDuration;
     [SerializeField] private float eyesClosedInterval;
+    [SerializeField] private float hoverDistance = 0.6f;
     [SerializeField] private float minVelocityForEyesClosed = 1.5f;
     [SerializeField] private TextMeshPro nameText;
     [SerializeField] private MovementDescr nameTextMovement;
@@ -43,6 +43,9 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     private float closeEyesTime = 0;
 
     private Vector2 arrowStartPosition;
+    private Vector2 nameTextStartPosition;
+
+    private bool hovered;
 
     public void Init(Player owner) 
     {
@@ -55,6 +58,7 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         balloons.color = new Color(1, 1, 1, 0);
 
         arrowStartPosition = turnArrow.transform.localPosition;
+        nameTextStartPosition = nameText.transform.localPosition;
     }
 
     private void Update()
@@ -77,11 +81,20 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         balloons.transform.eulerAngles = new Vector3(0, 0, 0);
 
         // Eyes
-        Vector2 pointerDir = GameManager.i.GetPointerDirection(transform.position);
-        eyesWhiteSpriteRenderer.transform.position = transform.position + (Vector3)pointerDir * eyesWhiteDistance;
+        Vector2 pointerDelta = GameManager.i.GetPointerDelta(transform.position);
+        eyesWhiteSpriteRenderer.transform.position = transform.position + (Vector3)pointerDelta.normalized * eyesWhiteDistance;
         eyesWhiteSpriteRenderer.transform.rotation = Quaternion.identity;
-        eyesBlackSpriteRenderer.transform.position = transform.position + (Vector3)pointerDir * eyesBlackDistance;
+        eyesBlackSpriteRenderer.transform.position = transform.position + (Vector3)pointerDelta.normalized * eyesBlackDistance;
         eyesBlackSpriteRenderer.transform.rotation = Quaternion.identity;
+
+        if (pointerDelta.magnitude > hoverDistance)
+        {
+            if (hovered) PointerExit();
+        }
+        else
+        {
+            if (!hovered) PointerEnter();
+        }
 
         if ((Time.time - closeEyesTime) % eyesClosedInterval < eyesClosedDuration)
         {
@@ -93,6 +106,9 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
             eyesWhiteSpriteRenderer.sprite = eyesOpened;
             eyesBlackSpriteRenderer.enabled = true;
         }
+
+        nameText.transform.position = transform.position + (Vector3)nameTextStartPosition;
+        nameText.transform.rotation = Quaternion.identity;
     }
 
     public bool IsTouchingGround()
@@ -208,8 +224,9 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         }
     }
         
-    public void OnPointerEnter(PointerEventData eventData)
+    public void PointerEnter()
     {
+        hovered = true;
         nameText.gameObject.SetActive(true);
         nameTextMovement.Do(t => nameText.fontSize = t);
         
@@ -217,8 +234,9 @@ public class Character : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         eyesBlackSpriteRenderer.enabled = false;
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    public void PointerExit()
     {
+        hovered = false;
         nameTextMovement.DoReverse(t => nameText.fontSize = t).setOnComplete(() => nameText.gameObject.SetActive(false));
         
         eyesWhiteSpriteRenderer.sprite = eyesOpened;
