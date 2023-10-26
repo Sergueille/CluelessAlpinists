@@ -8,7 +8,7 @@ public class CameraController : MonoBehaviour
     public Camera mainCamera;
     public Canvas canvas;
 
-    public bool followCharacter = true;
+    public bool followCharacter = false;
 
     [SerializeField] private Vector2 offset;
     [SerializeField] private float cameraSpeed;

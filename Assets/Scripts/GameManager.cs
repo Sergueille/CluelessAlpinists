@@ -103,12 +103,13 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         infoText.text = "";
-        StartRace(startInfos);
         finishScreenCanvas.alpha = 0;
-        UIParent.alpha = 1;
-
+        UIParent.alpha = 0;
         Cursor.visible = false;
         continueButtonStartPosition = continueButton.transform.localPosition;
+        ToggleContinueButton(true, true);
+
+        StartRace(startInfos); // TEST
     }
 
     private void Update()
@@ -121,9 +122,11 @@ public class GameManager : MonoBehaviour
 
     private void StartRace(PlayerInfo[] infos)
     {
+        UIParent.alpha = 1;
         CreatePlayers(infos);
         currentPlayerID = 0;
         playersFinished = 0;
+        CameraController.i.followCharacter = true;
         raceCoroutine = StartCoroutine(RaceCoroutine());
     } 
 
@@ -143,15 +146,14 @@ public class GameManager : MonoBehaviour
             }
 
             // Show continue button
-            continueButtonMovement.DoReverse((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
+            ToggleContinueButton(true);
 
             SetInfoText("Réordonnez les cartes");
 
             yield return new WaitUntil(() => shouldContinue || CurrentPlayer.finished); // TEST
             shouldContinue = false;
 
-            // Fide continue button
-            continueButtonMovement.Do((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
+            ToggleContinueButton(false);
 
             // Darken cards
             foreach (Card card in CurrentPlayer.hand)
@@ -550,5 +552,18 @@ public class GameManager : MonoBehaviour
         res.Init(player);
 
         return res;
+    }
+
+    private void ToggleContinueButton(bool visible, bool immediate = false)
+    {
+        if (immediate)
+        {
+            continueButton.transform.localPosition = visible ? continueButtonStartPosition : continueButtonStartPosition - Vector3.down * continueButtonMovement.amplitude;
+        }
+
+        if (visible)
+            continueButtonMovement.DoReverse((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
+        else
+            continueButtonMovement.Do((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
     }
 }
