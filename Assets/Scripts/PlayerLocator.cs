@@ -37,7 +37,7 @@ public class PlayerLocator : MonoBehaviour
                             
             Locator l = GetLocatorWithID(i);
 
-            if (outOfScreen)
+            if (outOfScreen && !GameManager.i.players[i].finished)
             {
                 screenPos.Scale(new Vector2(canvasSize.x / Screen.width, canvasSize.y / Screen.height)); // Now canvas pos
 

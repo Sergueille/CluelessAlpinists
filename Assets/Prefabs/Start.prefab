@@ -110,7 +110,7 @@ Transform:
   m_GameObject: {fileID: 4055978873868912}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.3, y: 1, z: 1}
+  m_LocalScale: {x: 1.82, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1571790342730513622}
@@ -300,15 +300,14 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0
   m_Points:
-  - {x: -2.1327024, y: -0.26781487}
-  - {x: -1.2790289, y: 0.27408218}
-  - {x: -1.1777563, y: 0.27588654}
-  - {x: -1.1766005, y: 0.138}
-  - {x: 1.1842332, y: 0.138}
-  - {x: 1.1843486, y: 0.27239585}
-  - {x: 1.190301, y: 0.27237725}
-  - {x: 1.288949, y: 0.27207065}
-  - {x: 2.1327548, y: -0.26923323}
+  - {x: -2.93, y: -0.26781487}
+  - {x: -1.81, y: 0.27408218}
+  - {x: -1.65, y: 0.27588654}
+  - {x: -1.65, y: 0.138}
+  - {x: 1.67, y: 0.138}
+  - {x: 1.66, y: 0.27239585}
+  - {x: 1.82, y: 0.27237725}
+  - {x: 3.2497017, y: -0.4071622}
   m_AdjacentStartPoint: {x: 0, y: 0}
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0

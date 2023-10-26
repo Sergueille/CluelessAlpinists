@@ -57,6 +57,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Sprite[] pointers;
     [SerializeField] private Button continueButton;
     [SerializeField] private MovementDescr continueButtonMovement;
+    [SerializeField] private GameObject rankingEntryPrefab;
+    [SerializeField] private Transform rankingParent;
+    [SerializeField] private CanvasGroup finishScreenCanvas;
+    [SerializeField] private CanvasGroup UIParent;
+    [SerializeField] private float finishScreenTransitionDuration;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -99,6 +104,8 @@ public class GameManager : MonoBehaviour
     {
         infoText.text = "";
         StartRace(startInfos);
+        finishScreenCanvas.alpha = 0;
+        UIParent.alpha = 1;
 
         Cursor.visible = false;
         continueButtonStartPosition = continueButton.transform.localPosition;
@@ -125,6 +132,7 @@ public class GameManager : MonoBehaviour
         while (true)
         {
             bonusAtEndOfTurn = BonusType.none;
+            CurrentPlayer.turns++;
 
             for (int i = 0; i < cardsInHand; i++)
             {
@@ -431,7 +439,7 @@ public class GameManager : MonoBehaviour
 
     public Card InstantiateCard(ActionType type)
     {
-        Card res = Instantiate(i.cardPrefab, CameraController.i.canvas.transform).GetComponent<Card>();
+        Card res = Instantiate(i.cardPrefab, UIParent.transform).GetComponent<Card>();
         res.Init(type);
 
         return res;
@@ -490,17 +498,57 @@ public class GameManager : MonoBehaviour
         MapManager.i.finishParticles.Play();
         CameraController.i.followCharacter = false;
 
-        Debug.Log(playersFinished);
-
         playersFinished++;
+        player.rank = playersFinished;
+        player.finished = true;
+
         if (playersFinished >= PlayerCount - 1)
         {
             StopCoroutine(raceCoroutine);
-            Debug.Log("Finished!");
+            StartCoroutine(ShowRankCoroutine());
+        }
+    }
 
-            // TODO
+    private IEnumerator ShowRankCoroutine()
+    {
+        LeanTween.alphaCanvas(finishScreenCanvas, 1, finishScreenTransitionDuration);
+        LeanTween.alphaCanvas(UIParent, 0, finishScreenTransitionDuration);
+
+        SetPointerType(PointerType.normal);
+
+        yield return new WaitForSeconds(finishScreenTransitionDuration);
+
+        for (int i = 1; i < PlayerCount; i++)
+        {
+            // Search player with rank
+            foreach (Player p in players)
+            {
+                if (p.rank == i)
+                {
+                    InstantiateRankEntry(p);
+                    break;
+                }
+            }
+            
+            yield return new WaitForSeconds(smallDelay);
         }
 
-        player.finished = true;
+        // Search last player
+        foreach (Player p in players)
+        {
+            if (p.rank == -1)
+            {
+                InstantiateRankEntry(p);
+                break;
+            }
+        }
+    }
+
+    private RankingEntry InstantiateRankEntry(Player player)
+    {
+        RankingEntry res = Instantiate(rankingEntryPrefab, rankingParent).GetComponent<RankingEntry>();
+        res.Init(player);
+
+        return res;
     }
 }

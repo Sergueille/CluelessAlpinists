@@ -218,7 +218,7 @@ public class Character : MonoBehaviour
             t.triggerEvent.Invoke();
         }
 
-        if (coll.gameObject == MapManager.i.finishTrigger)
+        if (coll.gameObject == MapManager.i.finishTrigger && !owner.finished)
         {
             GameManager.i.PlayerFinishesRace(owner);
         }

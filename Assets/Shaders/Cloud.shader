@@ -1,18 +1,18 @@
-Shader "Unlit/Grass"
+Shader "Unlit/Cloud"
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _Data ("data", 2D) = "black" {}
         _WindSpeed ("Wind Speed", float) = 1
+        _Alpha ("Alpha", float) = 1
         _WaveLength ("Wave length", float) = 1
         _WaveAmplitude ("Wave Amplitude", float) = 1
     }
     SubShader
     {
-        Tags {"Queue" = "Transparent" "RenderType"="Transparent" }
+        Tags {"Queue"="Transparent" "RenderType"="Transparent" }
         LOD 100
-        Blend SrcAlpha OneMinusSrcAlpha
+        Blend SrcAlpha One
 
         Pass
         {
@@ -43,6 +43,7 @@ Shader "Unlit/Grass"
             float _WindSpeed;
             float _WaveLength;
             float _WaveAmplitude;
+            float _Alpha;
 
             v2f vert (appdata v)
             {
@@ -56,12 +57,14 @@ Shader "Unlit/Grass"
             {
                 fixed4 data = tex2D(_Data, i.uv);
 
-                float deltaX = sin(_Time.x * _WindSpeed + i.vertex.x * _WaveLength)
-                             * sin(_Time.x * _WindSpeed * 0.3 + i.vertex.x * _WaveLength) * _WaveAmplitude * data.x;
+                float time = _Time.x;
+                float deltaX = sin(time * _WindSpeed + i.uv.x * _WaveLength) * sin(time * _WindSpeed * 0.9 + i.uv.y * _WaveLength) * _WaveAmplitude;
+                float deltaY = sin(time * _WindSpeed * 0.9 + i.uv.x * _WaveLength * 0.9) * sin(time * _WindSpeed * 0.8 + i.uv.y * _WaveLength * 0.9) * _WaveAmplitude;
 
-                fixed4 col = tex2D(_MainTex, float2(i.uv.x + deltaX, i.uv.y));
+                fixed4 col = tex2D(_MainTex, float2(i.uv.x + deltaX, i.uv.y + deltaY));
+                col.a *= _Alpha;
 
-                if (col.a < 0.2) discard;
+                if (col.a < 0.05) discard;
                 return col;
             }
             ENDCG

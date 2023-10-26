@@ -7,6 +7,9 @@ public class Player
     public PlayerInfo info;
     public Character character;
 
+    public int rank = -1;
+    public int turns = 0;
+
     public List<ActionType> allActions;
     public List<ActionType> deck;
     public List<Card> hand;

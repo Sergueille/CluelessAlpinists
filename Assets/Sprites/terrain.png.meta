@@ -225,7 +225,7 @@ TextureImporter:
         - {x: -214, y: -221.5}
         - {x: 311, y: -221.5}
         - {x: 311, y: 41.5}
-        - {x: 119, y: 221.5}
+        - {x: 96, y: 215.5}
       physicsShape: []
       tessellationDetail: 0
       bones: []
@@ -264,6 +264,37 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: terrain_4
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 402
+        width: 309
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: 53.5, y: 120}
+        - {x: -125.5, y: 120}
+        - {x: -154.5, y: 46}
+        - {x: -154.5, y: -62}
+        - {x: -68.5, y: -83}
+        - {x: -4.5, y: -113}
+        - {x: 99.5, y: -112}
+        - {x: 154.5, y: -89}
+        - {x: 154.5, y: 61}
+        - {x: 134.5, y: 120}
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8496ea96a0774274793c18ae8ecbd932
+      internalID: -533686879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -279,6 +310,7 @@ TextureImporter:
     nameFileIdTable:
       terrain_2: 1781369102
       terrain_3: 998690277
+      terrain_4: -533686879
       terrain_1: 1546163596
       terrain_0: 589942579
   spritePackingTag: 
