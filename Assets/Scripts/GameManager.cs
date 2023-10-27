@@ -117,7 +117,7 @@ public class GameManager : MonoBehaviour
         UIParent.alpha = 0;
         Cursor.visible = false;
         continueButtonStartPosition = continueButton.transform.localPosition;
-        ToggleContinueButton(true, true);
+        ToggleContinueButton(false, true);
 
         menuInfos = new PlayerInfo[maxPlayerCount];
         for (int i = 0; i < maxPlayerCount; i++)
@@ -126,6 +126,8 @@ public class GameManager : MonoBehaviour
             menuInfos[i].activated = false;
             menuInfos[i].skin = skins[i];
         }
+
+        transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
     }
 
     public void Play()
@@ -207,12 +209,14 @@ public class GameManager : MonoBehaviour
 
                 ActionType type = card.type;
 
-                yield return new WaitUntil(() => !Input.GetMouseButton(0));
+                // yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                 if (type == ActionType.jump)
                 {
                     SetInfoText("Cliquez pour sauter");
                     SetPointerType(PointerType.aim);
+
+                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                     while (true && !CurrentPlayer.finished)
                     {
@@ -264,6 +268,8 @@ public class GameManager : MonoBehaviour
                 {
                     SetInfoText("Cliquez pour lancer");
                     SetPointerType(PointerType.aim);
+                    
+                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                     while (true && !CurrentPlayer.finished)
                     {
@@ -282,13 +288,13 @@ public class GameManager : MonoBehaviour
                 }
                 else if (type == ActionType.balloon)
                 {
-                    SetInfoText("Cliquez pour éclater les ballons");
+                    SetInfoText("Attendez que les ballons éclatent");
 
                     float startTime = Time.time;
 
                     CurrentPlayerCharacter.ShowBalloons();
 
-                    while (!Input.GetMouseButton(0) && Time.time < startTime + balloonDuration && !CurrentPlayer.finished)
+                    while (Time.time < startTime + balloonDuration && !CurrentPlayer.finished)
                     {
                         if (CurrentPlayerCharacter.rb.velocity.y < balloonTargetVelocity)
                         {
@@ -304,6 +310,8 @@ public class GameManager : MonoBehaviour
                 {
                     SetInfoText("Cliquez pour lancer le grappin");
                     SetPointerType(PointerType.aim);
+                    
+                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                     while (true && !CurrentPlayer.finished)
                     {
@@ -592,6 +600,21 @@ public class GameManager : MonoBehaviour
                 break;
             }
         }
+
+        shouldContinue = false;
+        ToggleContinueButton(true);
+        yield return new WaitUntil(() => shouldContinue);
+        shouldContinue = false;
+
+        // Return to menu
+        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
+            finishScreenCanvas.alpha = 0;
+            SceneManager.LoadScene("Menu");
+
+            Destroy(pointer.gameObject);
+            Destroy(CameraController.i.gameObject);
+            Destroy(gameObject);
+        });
     }
 
     private RankingEntry InstantiateRankEntry(Player player)

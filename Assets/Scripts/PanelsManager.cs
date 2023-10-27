@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PanelsManager : MonoBehaviour
 {
+    public static PanelsManager i;
+
     [SerializeField] private RectTransform[] panels;
     [SerializeField] private MovementDescr transition;
     [SerializeField] private RectTransform startPanel;
@@ -11,6 +13,8 @@ public class PanelsManager : MonoBehaviour
 
     private void Awake()
     {
+        i = this;
+
         foreach (RectTransform panel in panels)
         {
             panel.gameObject.SetActive(false);
@@ -47,5 +51,10 @@ public class PanelsManager : MonoBehaviour
     public void HidePanel()
     {
         SelectPanel(null);
+    }
+
+    public void SelectStartPanel()
+    {
+        SelectPanel(startPanel);
     }
 }

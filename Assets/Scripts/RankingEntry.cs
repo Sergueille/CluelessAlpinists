@@ -32,7 +32,7 @@ public class RankingEntry : MonoBehaviour
         }
         else
         {
-            turnsText.text = player.turns.ToString() + "tours";
+            turnsText.text = player.turns.ToString() + " tours";
         }
 
         skin.sprite = player.info.skin;
