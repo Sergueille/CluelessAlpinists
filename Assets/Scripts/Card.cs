@@ -39,7 +39,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void Init(ActionType type)
     {
         this.type = type;
-        icon.sprite = GameManager.i.itemsSprites[(int)type]; // TEST
+        icon.sprite = GameManager.i.itemsSprites[(int)type];
 
         darkImage.color = new Color(0, 0, 0, 0);
     }

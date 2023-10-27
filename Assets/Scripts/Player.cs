@@ -129,6 +129,14 @@ public class Player
 [Serializable]
 public struct PlayerInfo
 {
-    public Sprite avatar;
+    public Sprite skin;
     public string name;
+    public bool activated;
+
+    public PlayerInfo(string name)
+    {
+        skin = null;
+        this.name = name;
+        activated = false;
+    }
 }

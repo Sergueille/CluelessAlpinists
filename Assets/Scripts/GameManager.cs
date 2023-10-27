@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum PointerType
@@ -14,11 +15,14 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager i;
 
-    [SerializeField] private PlayerInfo[] startInfos; // TEST
+    [NonSerialized] public PlayerInfo[] menuInfos;
     [NonSerialized] public Player[] players;
 
     [NonSerialized] public BonusType bonusAtEndOfTurn = BonusType.none;
 
+    public Map[] maps;
+
+    public int maxPlayerCount = 6;
     public int cardsInHand = 3; // How many cards the players should draw
     public int bonusCardCount = 3; // How many cards the players should draw
     [SerializeField] private float jumpForce = 10;
@@ -43,6 +47,7 @@ public class GameManager : MonoBehaviour
 
     [NonSerialized] public int currentPlayerID;
 
+    public bool raceStarted = false;
 
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private GameObject characterPrefab;
@@ -62,8 +67,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private CanvasGroup finishScreenCanvas;
     [SerializeField] private CanvasGroup UIParent;
     [SerializeField] private float finishScreenTransitionDuration;
+    [SerializeField] private Sprite[] skins;
 
     [SerializeField] private float smallDelay = 0.1f;
+
+    [SerializeField] private MovementDescr transitionMovement;
+    [SerializeField] private Material transitionMaterial;
+
 
     [NonSerialized] public bool shouldContinue;
 
@@ -109,7 +119,30 @@ public class GameManager : MonoBehaviour
         continueButtonStartPosition = continueButton.transform.localPosition;
         ToggleContinueButton(true, true);
 
-        StartRace(startInfos); // TEST
+        menuInfos = new PlayerInfo[maxPlayerCount];
+        for (int i = 0; i < maxPlayerCount; i++)
+        {
+            menuInfos[i] = new PlayerInfo("");
+            menuInfos[i].activated = false;
+            menuInfos[i].skin = skins[i];
+        }
+    }
+
+    public void Play()
+    {
+        Map mapToLoad = maps[0];
+
+        DontDestroyOnLoad(gameObject); 
+        DontDestroyOnLoad(CameraController.i.gameObject); 
+        DontDestroyOnLoad(pointer); 
+
+        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
+            transitionMaterial.SetFloat("_Size", 0);
+            SceneManager.LoadScene(mapToLoad.sceneName);
+            transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
+                StartRace(menuInfos);
+            });
+        });
     }
 
     private void Update()
@@ -126,6 +159,7 @@ public class GameManager : MonoBehaviour
         CreatePlayers(infos);
         currentPlayerID = 0;
         playersFinished = 0;
+        raceStarted = true;
         CameraController.i.followCharacter = true;
         raceCoroutine = StartCoroutine(RaceCoroutine());
     } 
@@ -150,7 +184,7 @@ public class GameManager : MonoBehaviour
 
             SetInfoText("Réordonnez les cartes");
 
-            yield return new WaitUntil(() => shouldContinue || CurrentPlayer.finished); // TEST
+            yield return new WaitUntil(() => shouldContinue || CurrentPlayer.finished);
             shouldContinue = false;
 
             ToggleContinueButton(false);
@@ -408,16 +442,28 @@ public class GameManager : MonoBehaviour
 
     private void CreatePlayers(PlayerInfo[] infos)
     {
-        players = new Player[infos.Length];
-
-        for (int i = 0; i < PlayerCount; i++) 
+        int playerCount = 0;
+        for (int i = 0; i < infos.Length; i++) 
         {
-            players[i] = new Player();
-            players[i].info = infos[i];
+            if (infos[i].activated)
+                playerCount++;
+        }
 
-            players[i].SetDefaultCards();
+        players = new Player[playerCount];
 
-            players[i].character = InstantiateCharacter(players[i]); // Create character GameObject
+        int playerID = 0;
+        for (int i = 0; i < infos.Length; i++) 
+        {
+            if (!infos[i].activated) continue;
+
+            players[playerID] = new Player();
+            players[playerID].info = infos[i];
+
+            players[playerID].SetDefaultCards();
+
+            players[playerID].character = InstantiateCharacter(players[playerID]); // Create character GameObject
+            
+            playerID++;
         }
 
         // Shuffle players afterwards instead of infos because this struct can be large
@@ -519,6 +565,8 @@ public class GameManager : MonoBehaviour
         SetPointerType(PointerType.normal);
 
         yield return new WaitForSeconds(finishScreenTransitionDuration);
+
+        raceStarted = false;
 
         for (int i = 1; i < PlayerCount; i++)
         {

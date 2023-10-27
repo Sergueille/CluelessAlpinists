@@ -40,8 +40,7 @@ public class Bomb : MonoBehaviour
                 if (other != null)
                 {
                     Vector2 direction = other.transform.position - transform.position;
-                    other.AddForce(direction.normalized * explosionForce * (1 - direction.magnitude / explosionRadius), ForceMode2D.Impulse); 
-                    // TODO: add force on the nearest point towards the bomb?
+                    other.AddForce(direction.normalized * explosionForce * (1 - direction.magnitude / explosionRadius), ForceMode2D.Impulse);
                 }
             }
         }

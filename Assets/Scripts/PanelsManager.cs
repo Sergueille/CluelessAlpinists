@@ -22,20 +22,30 @@ public class PanelsManager : MonoBehaviour
 
     public void SelectPanel(RectTransform panel)
     {
-        Debug.Log("Hey");
+        if (currentPanel != null)
+        {
+            RectTransform oldPanel = currentPanel;
+            transition.DoNormalized(t => {
+                oldPanel.anchorMin = new Vector2(0, t);
+                oldPanel.anchorMax = new Vector2(1, 1 + t);
+            }).setOnComplete(() => oldPanel.gameObject.SetActive(false));
+        }
 
-        RectTransform oldPanel = currentPanel;
-        transition.DoNormalized(t => {
-            oldPanel.anchorMin = new Vector2(0, t);
-            oldPanel.anchorMax = new Vector2(1, 1 + t);
-        }).setOnComplete(() => oldPanel.gameObject.SetActive(false));
-
-        panel.gameObject.SetActive(true);
-        transition.DoNormalized(t => {
-            panel.anchorMin = new Vector2(0, t - 1);
-            panel.anchorMax = new Vector2(1, t);
-        });
+        if (panel != null)
+        {
+            panel.gameObject.SetActive(true);
+            transition.DoNormalized(t => {
+                panel.anchorMin = new Vector2(0, t - 1);
+                panel.anchorMax = new Vector2(1, t);
+            });
+        }
 
         currentPanel = panel;
+    }
+
+    
+    public void HidePanel()
+    {
+        SelectPanel(null);
     }
 }

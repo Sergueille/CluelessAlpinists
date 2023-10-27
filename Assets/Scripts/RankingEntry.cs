@@ -35,7 +35,7 @@ public class RankingEntry : MonoBehaviour
             turnsText.text = player.turns.ToString() + "tours";
         }
 
-        skin.sprite = player.info.avatar;
+        skin.sprite = player.info.skin;
 
         background.anchorMax = new Vector2(0, 1);
         skin.transform.localScale = Vector3.zero;

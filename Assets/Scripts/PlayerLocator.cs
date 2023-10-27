@@ -21,6 +21,8 @@ public class PlayerLocator : MonoBehaviour
 
     private void Update()
     {
+        if (!GameManager.i.raceStarted) return;
+
         for (int i = 0; i < GameManager.i.players.Length; i++)
         {
             Character targetCharacter = GameManager.i.players[i].character;
@@ -74,7 +76,7 @@ public class PlayerLocator : MonoBehaviour
     private Locator CreateLocator(Character character, int id)
     {
         Locator l = GameObject.Instantiate(locatorPrefab, CameraController.i.canvas.transform).GetComponent<Locator>();
-        l.Init(character.owner.info.avatar, id);
+        l.Init(character.owner.info.skin, id);
         locators.Add(l);
         return l;
     }

@@ -50,7 +50,7 @@ public class Character : MonoBehaviour
     public void Init(Player owner) 
     {
         this.owner = owner;
-        sr.sprite = owner.info.avatar;
+        sr.sprite = owner.info.skin;
         nameText.text = owner.info.name;
         nameText.gameObject.SetActive(false);
 
