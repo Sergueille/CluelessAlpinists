@@ -33,6 +33,12 @@ public class Bomb : MonoBehaviour
             Destroy(trailPs);
             explosionPs.Play(); // GameObject destroyed by particle system
 
+            if (explosionForce > 0)
+                SoundManager.PlaySound("explosion");
+            else
+                SoundManager.PlaySound("explosion_inv");
+                
+
             Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, explosionRadius);
             foreach (Collider2D coll in colliders)
             {

@@ -5254,7 +5254,7 @@ MonoBehaviour:
   eyesClosedDuration: 0.1
   eyesClosedInterval: 3
   hoverDistance: 0.6
-  minVelocityForEyesClosed: 1.5
+  minVelocityForEyesClosed: 2.5
   nameText: {fileID: 1686605521176158600}
   nameTextMovement:
     amplitude: 4

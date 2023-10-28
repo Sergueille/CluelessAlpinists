@@ -59,6 +59,7 @@ public class Grappling : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D coll) 
     {
         collisionCallback();
+        SoundManager.PlaySound("grap_hit");
         attached = true;
         attachParent = coll.transform;
         Destroy(rb);

@@ -193,6 +193,7 @@ public class Character : MonoBehaviour
         if (coll.relativeVelocity.sqrMagnitude > minVelocityForEyesClosed * minVelocityForEyesClosed)
         {
             closeEyesTime = Time.time;
+            SoundManager.PlaySound("qwak1");
         }
     }
 

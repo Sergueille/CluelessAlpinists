@@ -30,6 +30,7 @@ public class Bonus : MonoBehaviour
     {
         ps.Stop();
         disappearMovement.DoNormalized(t => sr.transform.localScale = Vector3.one * (1 - t));
+        SoundManager.PlaySound("bonus");
         type = BonusType.none;
     }
 }

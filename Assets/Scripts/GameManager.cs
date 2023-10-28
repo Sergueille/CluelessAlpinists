@@ -229,6 +229,7 @@ public class GameManager : MonoBehaviour
                         if (CurrentPlayerCharacter.IsTouchingGround() && Input.GetMouseButton(0))
                         {
                             CurrentPlayerCharacter.AddImpulse(force);
+                            SoundManager.PlaySound("boing");
                             break;
                         }
                     }
@@ -242,6 +243,8 @@ public class GameManager : MonoBehaviour
 
                     float fuel = jetpackFuel;
 
+                    SoundManager.LoopSoundHandle handle = null;
+
                     while (fuel > 0 && !CurrentPlayer.finished)
                     {
                         if (Input.GetMouseButton(0))
@@ -253,13 +256,27 @@ public class GameManager : MonoBehaviour
                             fuel -= Time.fixedDeltaTime;
 
                             CurrentPlayerCharacter.ToggleJetpackParticles(true, force);
+                            
+                            if (handle == null)
+                                handle = SoundManager.PlayLoopSound("ext_begin", "ext_loop", "ext_end");
                         }
                         else
                         {
                             CurrentPlayerCharacter.ToggleJetpackParticles(false, Vector2.right);
+
+                            if (handle != null)
+                            {
+                                handle.Stop();
+                                handle = null;
+                            }
                         }
 
                         yield return new WaitForFixedUpdate();
+                    }
+
+                    if (handle != null)
+                    {
+                        handle.Stop();
                     }
 
                     CurrentPlayerCharacter.ToggleJetpackParticles(false, Vector2.right);
@@ -282,6 +299,7 @@ public class GameManager : MonoBehaviour
                         if (Input.GetMouseButton(0))
                         {
                             CurrentPlayerCharacter.SpawnBomb(force, type == ActionType.invertedBomb);
+                            SoundManager.PlaySound("throw");
                             break;
                         }
                     }
@@ -293,6 +311,7 @@ public class GameManager : MonoBehaviour
                     float startTime = Time.time;
 
                     CurrentPlayerCharacter.ShowBalloons();
+                    SoundManager.PlaySound("balloon");
 
                     while (Time.time < startTime + balloonDuration && !CurrentPlayer.finished)
                     {
@@ -305,6 +324,7 @@ public class GameManager : MonoBehaviour
                     }
 
                     CurrentPlayerCharacter.HideBalloons();
+                    SoundManager.PlaySound("balloon_pop");
                 }
                 else if (type == ActionType.grappling)
                 {
@@ -313,7 +333,7 @@ public class GameManager : MonoBehaviour
                     
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
-                    while (true && !CurrentPlayer.finished)
+                    while (!CurrentPlayer.finished)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * grapplingThrowForce;
                         force.y *= grapplingThrowVerticalMultiplier;
@@ -323,6 +343,8 @@ public class GameManager : MonoBehaviour
 
                         if (Input.GetMouseButton(0))
                         {
+                            SoundManager.PlaySound("throw");
+
                             grapplingTouchedSomething = false;
                             Grappling grappling = CurrentPlayerCharacter.SpawnGrappling(force, () => {
                                 grapplingTouchedSomething = true;
@@ -334,6 +356,8 @@ public class GameManager : MonoBehaviour
                             SetPointerType(PointerType.normal);
 
                             SetInfoText("Cliquez pour lâcher le grappin");
+                            
+                            SoundManager.SoundHandle handle = SoundManager.PlaySound("grap_loop", true);
 
                             float startTime = Time.time;
                             bool nearEnough = false;
@@ -346,6 +370,7 @@ public class GameManager : MonoBehaviour
                                 nearEnough = delta.magnitude < grapplingTargetDistance;
                             }
 
+                            handle.Stop();
                             grappling.RemoveRope();
 
                             break;
@@ -557,6 +582,9 @@ public class GameManager : MonoBehaviour
         playersFinished++;
         player.rank = playersFinished;
         player.finished = true;
+
+        SoundManager.PlaySound("tadaa");
+        SoundManager.PlaySound("blower");
 
         if (playersFinished >= PlayerCount - 1)
         {
