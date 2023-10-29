@@ -77,6 +77,8 @@ public class GameManager : MonoBehaviour
 
     [NonSerialized] public bool shouldContinue;
 
+    private bool finishedRace = false;
+
     private Card selectedExchangeNewCard = null;
     private Card selectedExchangeDeckCard = null;
     private bool grapplingTouchedSomething = false;
@@ -130,9 +132,9 @@ public class GameManager : MonoBehaviour
         transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
     }
 
-    public void Play()
+    public void Play(int mapId)
     {
-        Map mapToLoad = maps[0];
+        Map mapToLoad = maps[mapId];
 
         DontDestroyOnLoad(gameObject); 
         DontDestroyOnLoad(CameraController.i.gameObject); 
@@ -162,6 +164,7 @@ public class GameManager : MonoBehaviour
         currentPlayerID = 0;
         playersFinished = 0;
         raceStarted = true;
+        finishedRace = false;
         CameraController.i.followCharacter = true;
         raceCoroutine = StartCoroutine(RaceCoroutine());
     } 
@@ -453,6 +456,11 @@ public class GameManager : MonoBehaviour
             SetInfoText("");
             bonusAtEndOfTurn = BonusType.none;
 
+            if (finishedRace)
+            {
+                yield break;
+            }
+
             // Wait a little before next turn
             if (CurrentPlayer.finished)
             {
@@ -588,7 +596,7 @@ public class GameManager : MonoBehaviour
 
         if (playersFinished >= PlayerCount - 1)
         {
-            StopCoroutine(raceCoroutine);
+            finishedRace = true;
             StartCoroutine(ShowRankCoroutine());
         }
     }

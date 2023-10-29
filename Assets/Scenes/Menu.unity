@@ -4290,7 +4290,7 @@ MonoBehaviour:
   - clip: {fileID: 8300000, guid: 0d12e6db24544124b95bf4d599fe15b3, type: 3}
     name: qwak1
     usePitch: 1
-    volume: 0.5
+    volume: 0.2
   - clip: {fileID: 8300000, guid: c2d04e9498f36714ea0a0b4147c2a75e, type: 3}
     name: bonus
     usePitch: 1
