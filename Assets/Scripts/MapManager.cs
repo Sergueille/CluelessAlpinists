@@ -9,6 +9,9 @@ public class MapManager : MonoBehaviour
 
     public GameObject finishTrigger;
     public ParticleSystem finishParticles;
+
+    [Tooltip("Positive push towards right")]
+    public float windForce = 0;
     
     private void Awake()
     {

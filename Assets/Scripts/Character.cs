@@ -47,6 +47,8 @@ public class Character : MonoBehaviour
 
     private bool hovered;
 
+    private int windZoneCollisionCount = 0;
+
     public void Init(Player owner) 
     {
         this.owner = owner;
@@ -109,6 +111,11 @@ public class Character : MonoBehaviour
 
         nameText.transform.position = transform.position + (Vector3)nameTextStartPosition;
         nameText.transform.rotation = Quaternion.identity;
+
+        if (windZoneCollisionCount > 0)
+        {
+            rb.AddForce(Vector2.right * MapManager.i.windForce, ForceMode2D.Force);
+        }
     }
 
     public bool IsTouchingGround()
@@ -223,8 +230,23 @@ public class Character : MonoBehaviour
         {
             GameManager.i.PlayerFinishesRace(owner);
         }
+
+        if (coll.gameObject.layer == LayerMask.NameToLayer("WindZone"))
+        {
+            windZoneCollisionCount++;
+            Debug.Log(owner.info.name + " enter");
+        }
     }
-        
+
+    private void OnTriggerExit2D(Collider2D coll)
+    {
+        if (coll.gameObject.layer == LayerMask.NameToLayer("WindZone"))
+        {
+            windZoneCollisionCount--;
+            Debug.Log(owner.info.name + " exit");
+        }
+    }
+
     public void PointerEnter()
     {
         hovered = true;

@@ -145,7 +145,12 @@ public class GameManager : MonoBehaviour
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
             transitionMaterial.SetFloat("_Size", 0);
             SceneManager.LoadScene(mapToLoad.sceneName);
-            transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
+            transitionMovement.Do(t => {}) // HACK: setOnUpdate overrides this
+            .setOnUpdate((float t) => {
+                transitionMaterial.SetFloat("_Size", t);
+                CameraController.i.mainCamera.transform.position = MapManager.i.startZone.position;
+            })
+            .setOnComplete(() => {
                 StartRace(menuInfos);
             });
         });

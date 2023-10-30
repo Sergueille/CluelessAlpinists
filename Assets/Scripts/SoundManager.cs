@@ -38,11 +38,10 @@ public class SoundManager : MonoBehaviour
         {   
             if (!handle.startedLooping)
             {
-                if (handle.startClip.clip.length + handle.startTime > Time.time)
+                if (handle.startClip.clip.length + handle.startTime < Time.time)
                 {
                     handle.startedLooping = true;
                     handle.loopHandle = PlaySoundInstance(handle.loopClip, true);
-                    Debug.Log("Play");
                 }
             }
         }
@@ -125,7 +124,6 @@ public class SoundManager : MonoBehaviour
     {
         return UnityEngine.Random.Range(1 - i.randPitchAmplitude * 0.5f, 1 + i.randPitchAmplitude * 0.5f);
     }
-    
 
     public static ClipInfo GetClipByName(string clipName)
     {
@@ -181,7 +179,6 @@ public class SoundManager : MonoBehaviour
         {
             if (startedLooping)
             {
-                Debug.Log("Stop");
                 loopHandle.Stop();
                 i.loopSounds.Remove(this);
             }

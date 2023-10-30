@@ -43,10 +43,15 @@ public class PlayerLocator : MonoBehaviour
             {
                 screenPos.Scale(new Vector2(canvasSize.x / Screen.width, canvasSize.y / Screen.height)); // Now canvas pos
 
-                screenPos.x = Mathf.Max(screenPos.x, realDisplayMargin);
-                screenPos.y = Mathf.Max(screenPos.y, realDisplayMargin);
-                screenPos.x = Mathf.Min(screenPos.x, canvasSize.x - realDisplayMargin);
-                screenPos.y = Mathf.Min(screenPos.y, canvasSize.y - realDisplayMargin);
+                Vector2 maxDist = canvasSize / 2 - Vector2.one * realDisplayMargin;
+                Vector2 centeredPos = screenPos - canvasSize / 2;
+
+                float targetLength = Mathf.Min(
+                    maxDist.x / Mathf.Abs(centeredPos.x) * centeredPos.magnitude,
+                    maxDist.y / Mathf.Abs(centeredPos.y) * centeredPos.magnitude
+                );
+
+                screenPos = centeredPos.normalized * targetLength + canvasSize / 2;
 
                 if (l == null) // No locator created yet
                 {

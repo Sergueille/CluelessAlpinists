@@ -1196,7 +1196,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &237782402
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2202,7 +2202,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Jouer!
+  m_text: Continuer
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3464,6 +3464,9 @@ MonoBehaviour:
   - sprite: {fileID: 21300000, guid: 93185545347166344bf22f9a191a05c4, type: 3}
     sceneName: Map1
     name: Second map
+  - sprite: {fileID: 21300000, guid: 93185545347166344bf22f9a191a05c4, type: 3}
+    sceneName: Map2
+    name: Third map
   maxPlayerCount: 6
   cardsInHand: 3
   bonusCardCount: 4
@@ -3496,7 +3499,7 @@ MonoBehaviour:
   characterPrefab: {fileID: 4289312696910580547, guid: aec704623647e4c41a08c3c59163f2ae, type: 3}
   characterStartVerticalSpacing: 0.7
   characterStartHorizontalShift: 0.01
-  handYPosition: -290
+  handYPosition: -280
   handCardsSpacing: 150
   cardDrawMovement:
     amplitude: 200
@@ -4776,8 +4779,9 @@ GameObject:
   - component: {fileID: 1219862363}
   - component: {fileID: 1219862362}
   - component: {fileID: 1219862361}
+  - component: {fileID: 1219862364}
   m_Layer: 5
-  m_Name: Right
+  m_Name: Left
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4822,7 +4826,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -4897,6 +4901,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1219862359}
   m_CullTransparentMesh: 1
+--- !u!114 &1219862364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219862359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74d344091616ad04ba86302c95738a35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  img: {fileID: 1219862362}
+  clickDuration: 0.05
+  bounceDuration: 0.3
+  scaleAmount: 0.15
 --- !u!1 &1237070967
 GameObject:
   m_ObjectHideFlags: 0
@@ -5077,6 +5097,7 @@ GameObject:
   - component: {fileID: 1240414928}
   - component: {fileID: 1240414927}
   - component: {fileID: 1240414926}
+  - component: {fileID: 1240414929}
   m_Layer: 5
   m_Name: Right
   m_TagString: Untagged
@@ -5123,7 +5144,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -5198,6 +5219,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1240414924}
   m_CullTransparentMesh: 1
+--- !u!114 &1240414929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240414924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74d344091616ad04ba86302c95738a35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  img: {fileID: 1240414927}
+  clickDuration: 0.05
+  bounceDuration: 0.3
+  scaleAmount: 0.15
 --- !u!1 &1243294374
 GameObject:
   m_ObjectHideFlags: 0
@@ -6707,11 +6744,11 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -8730,7 +8767,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2067090279
 RectTransform:
   m_ObjectHideFlags: 0
