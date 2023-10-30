@@ -19,8 +19,10 @@ public class MapSelector : MonoBehaviour
         {
             MapUI ui = Instantiate(mapPrefab, mapList).GetComponent<MapUI>();
             ui.image.sprite = map.sprite;
-            ui.nameText.text = ui.name;
+            ui.nameText.text = map.name;
         }
+
+        SelectMap(currentMap);
     }
 
     public void Left()
@@ -40,7 +42,7 @@ public class MapSelector : MonoBehaviour
         currentMap = i;
 
         float totalWidth = mapWidth * GameManager.i.maps.Length + margin * (GameManager.i.maps.Length - 1);
-        float targetX = -totalWidth / 2 + mapWidth / 2 + (mapWidth + margin) * currentMap;
+        float targetX = totalWidth / 2 - mapWidth / 2 - (mapWidth + margin) * currentMap;
         
         LeanTween.moveLocalX(mapList.gameObject, targetX, movement.duration).setEase(movement.easeType);
     }

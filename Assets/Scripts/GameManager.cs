@@ -140,6 +140,8 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(CameraController.i.gameObject); 
         DontDestroyOnLoad(pointer); 
 
+        PanelsManager.i.HidePanel();
+
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
             transitionMaterial.SetFloat("_Size", 0);
             SceneManager.LoadScene(mapToLoad.sceneName);
