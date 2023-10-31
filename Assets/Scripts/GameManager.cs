@@ -68,6 +68,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private CanvasGroup UIParent;
     [SerializeField] private float finishScreenTransitionDuration;
     [SerializeField] private Sprite[] skins;
+    [SerializeField] private CanvasGroup pauseScreen;
+    [SerializeField] private MovementDescr pauseScreenMovement;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -120,6 +122,9 @@ public class GameManager : MonoBehaviour
         Cursor.visible = false;
         continueButtonStartPosition = continueButton.transform.localPosition;
         ToggleContinueButton(false, true);
+
+        pauseScreen.blocksRaycasts = false;
+        pauseScreen.alpha = 0;
 
         menuInfos = new PlayerInfo[maxPlayerCount];
         for (int i = 0; i < maxPlayerCount; i++)
@@ -651,15 +656,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitUntil(() => shouldContinue);
         shouldContinue = false;
 
-        // Return to menu
-        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
-            finishScreenCanvas.alpha = 0;
-            SceneManager.LoadScene("Menu");
-
-            Destroy(pointer.gameObject);
-            Destroy(CameraController.i.gameObject);
-            Destroy(gameObject);
-        });
+        ReturnToMenu();
     }
 
     private RankingEntry InstantiateRankEntry(Player player)
@@ -681,5 +678,34 @@ public class GameManager : MonoBehaviour
             continueButtonMovement.DoReverse((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
         else
             continueButtonMovement.Do((t) => continueButton.transform.localPosition = continueButtonStartPosition + Vector3.down * t);
+    }
+
+    public void TogglePauseScreen(bool enabled)
+    {
+        if (enabled)
+        {
+            Time.timeScale = 0;
+            pauseScreen.blocksRaycasts = true;
+            pauseScreenMovement.DoNormalized(t => pauseScreen.alpha = t).setIgnoreTimeScale(true);
+        }
+        else
+        {
+            Time.timeScale = 1;
+            pauseScreen.blocksRaycasts = false;
+            pauseScreenMovement.DoNormalized(t => pauseScreen.alpha = 1 - t);
+        }
+    }
+
+    public void ReturnToMenu()
+    {
+        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setIgnoreTimeScale(true).setOnComplete(() => {
+            Time.timeScale = 1;
+            finishScreenCanvas.alpha = 0;
+            SceneManager.LoadScene("Menu");
+
+            Destroy(pointer.gameObject);
+            Destroy(CameraController.i.gameObject);
+            Destroy(gameObject);
+        });
     }
 }

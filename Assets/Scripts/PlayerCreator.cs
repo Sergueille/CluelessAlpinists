@@ -8,6 +8,7 @@ public class PlayerCreator : MonoBehaviour
     public static int activatedCount = 0;
 
     [SerializeField] private Image skin;
+    [SerializeField] private TMP_InputField input;
 
     [SerializeField] private Color enabledColor;
     [SerializeField] private Color disabledColor;
@@ -17,17 +18,30 @@ public class PlayerCreator : MonoBehaviour
 
     public int id;
 
+    private string prefKey;
+
+    private void Awake()
+    {
+        activatedCount = 0;
+    }
+
     private void Start()
     {
+        prefKey = "PlayerName" + id.ToString();
+
         skin.sprite = GameManager.i.menuInfos[id].skin;
         background.color = disabledColor;
-        activatedCount = 0;
         continueButton.interactable = false;
+
+        if (PlayerPrefs.HasKey(prefKey))
+            SetName(PlayerPrefs.GetString(prefKey));
     }
 
     public void SetName(string newName)
     {
         GameManager.i.menuInfos[id].name = newName;
+
+        input.SetTextWithoutNotify(newName);
 
         if (newName == "" && GameManager.i.menuInfos[id].activated)
         {
@@ -43,5 +57,7 @@ public class PlayerCreator : MonoBehaviour
         }
 
         continueButton.interactable = activatedCount >= 2;
+
+        PlayerPrefs.SetString(prefKey, newName);
     }
 }

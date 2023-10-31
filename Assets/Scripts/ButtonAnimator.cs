@@ -14,14 +14,14 @@ public class ButtonAnimator : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     private void Bounce()
     {
         LeanTween.cancel(img.gameObject);
-        LeanTween.scale(img.gameObject, Vector3.one, bounceDuration).setEaseOutElastic();
+        LeanTween.scale(img.gameObject, Vector3.one, bounceDuration).setEaseOutElastic().setIgnoreTimeScale(true);
         SoundManager.PlaySound("button");
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
         LeanTween.cancel(img.gameObject);
-        LeanTween.scale(img.gameObject, new Vector3(1 - scaleAmount / 2, 1 - scaleAmount, 1), clickDuration);
+        LeanTween.scale(img.gameObject, new Vector3(1 - scaleAmount / 2, 1 - scaleAmount, 1), clickDuration).setIgnoreTimeScale(true);
     }
 
     public void OnPointerUp(PointerEventData eventData)

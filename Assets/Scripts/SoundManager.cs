@@ -41,6 +41,7 @@ public class SoundManager : MonoBehaviour
                 if (handle.startClip.clip.length + handle.startTime < Time.time)
                 {
                     handle.startedLooping = true;
+                    Debug.Log("START");
                     handle.loopHandle = PlaySoundInstance(handle.loopClip, true);
                 }
             }
@@ -177,11 +178,13 @@ public class SoundManager : MonoBehaviour
 
         public void Stop()
         {
+            Debug.Log("STOP - " + (startedLooping ? "" : "NOT STARTED"));
+
             if (startedLooping)
             {
                 loopHandle.Stop();
             }
-            
+
             i.loopSounds.Remove(this);
 
             PlaySound(endClip, false);

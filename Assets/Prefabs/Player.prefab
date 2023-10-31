@@ -491,6 +491,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   skin: {fileID: 1147621030215241908}
+  input: {fileID: 1147621031043095741}
   enabledColor: {r: 1, g: 1, b: 1, a: 1}
   disabledColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   colorTransitionDuration: 0.15
