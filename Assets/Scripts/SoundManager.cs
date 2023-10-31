@@ -180,8 +180,9 @@ public class SoundManager : MonoBehaviour
             if (startedLooping)
             {
                 loopHandle.Stop();
-                i.loopSounds.Remove(this);
             }
+            
+            i.loopSounds.Remove(this);
 
             PlaySound(endClip, false);
         }

@@ -267,8 +267,10 @@ public class GameManager : MonoBehaviour
 
                             CurrentPlayerCharacter.ToggleJetpackParticles(true, force);
                             
-                            if (handle == null)
+                            if (handle == null) 
+                            {
                                 handle = SoundManager.PlayLoopSound("ext_begin", "ext_loop", "ext_end");
+                            }
                         }
                         else
                         {

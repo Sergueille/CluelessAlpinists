@@ -111,7 +111,10 @@ public class Character : MonoBehaviour
 
         nameText.transform.position = transform.position + (Vector3)nameTextStartPosition;
         nameText.transform.rotation = Quaternion.identity;
+    }
 
+    private void FixedUpdate()
+    {
         if (windZoneCollisionCount > 0)
         {
             rb.AddForce(Vector2.right * MapManager.i.windForce, ForceMode2D.Force);
