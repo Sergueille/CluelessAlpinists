@@ -18,7 +18,11 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
-        if (i != null) Destroy(this); // Prevent loading 2 SoundManagers
+        if (i != null) 
+        {
+            Destroy(gameObject); // Prevent loading 2 SoundManagers
+            return;
+        } 
 
         i = this;
 
@@ -41,7 +45,6 @@ public class SoundManager : MonoBehaviour
                 if (handle.startClip.clip.length + handle.startTime < Time.time)
                 {
                     handle.startedLooping = true;
-                    Debug.Log("START");
                     handle.loopHandle = PlaySoundInstance(handle.loopClip, true);
                 }
             }
@@ -116,6 +119,7 @@ public class SoundManager : MonoBehaviour
 
         PlaySoundInstance(start, false);
 
+        Debug.Log("Add");
         loopSounds.Add(res);
 
         return res;

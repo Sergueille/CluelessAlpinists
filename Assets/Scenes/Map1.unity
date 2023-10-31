@@ -3099,7 +3099,7 @@ GameObject:
   - component: {fileID: 272731879}
   - component: {fileID: 272731878}
   - component: {fileID: 272731881}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Rock (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3611,6 +3611,7 @@ MonoBehaviour:
   startZone: {fileID: 1727011833}
   finishTrigger: {fileID: 1867536379}
   finishParticles: {fileID: 1133635742}
+  windForce: 0
 --- !u!1 &301302778
 GameObject:
   m_ObjectHideFlags: 0
@@ -24307,6 +24308,11 @@ MonoBehaviour:
   UIParent: {fileID: 2145082995}
   finishScreenTransitionDuration: 1.5
   skins: []
+  pauseScreen: {fileID: 0}
+  pauseScreenMovement:
+    amplitude: 0
+    duration: 0
+    easeType: 0
   smallDelay: 0.2
   transitionMovement:
     amplitude: 0
