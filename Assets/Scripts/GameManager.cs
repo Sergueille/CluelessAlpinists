@@ -135,6 +135,7 @@ public class GameManager : MonoBehaviour
         }
 
         transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
+        AudioListener.volume = 1;
     }
 
     public void Play(int mapId)
@@ -147,9 +148,11 @@ public class GameManager : MonoBehaviour
 
         PanelsManager.i.HidePanel();
 
+        transitionMovement.DoNormalized(t => AudioListener.volume = 1 - t);
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
             transitionMaterial.SetFloat("_Size", 0);
             SceneManager.LoadScene(mapToLoad.sceneName);
+            AudioListener.volume = 1;
             transitionMovement.Do(t => {}) // HACK: setOnUpdate overrides this
             .setOnUpdate((float t) => {
                 transitionMaterial.SetFloat("_Size", t);
@@ -698,10 +701,12 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
+        transitionMovement.DoNormalized(t => AudioListener.volume = 1 - t);
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setIgnoreTimeScale(true).setOnComplete(() => {
             Time.timeScale = 1;
             finishScreenCanvas.alpha = 0;
             SceneManager.LoadScene("Menu");
+            AudioListener.volume = 1;
 
             Destroy(pointer.gameObject);
             Destroy(CameraController.i.gameObject);

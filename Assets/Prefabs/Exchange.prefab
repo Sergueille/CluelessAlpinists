@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2917700301927730411}
   - component: {fileID: 2917700301927730409}
   - component: {fileID: 2917700301927730410}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: RainbowParticles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4824,7 +4824,7 @@ GameObject:
   - component: {fileID: 2917700302364001147}
   - component: {fileID: 2917700302364001145}
   - component: {fileID: 2917700302364001146}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Exchange
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4895,7 +4895,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2917700302706223458}
   - component: {fileID: 2917700302706223457}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: exchange
   m_TagString: Untagged
   m_Icon: {fileID: 0}

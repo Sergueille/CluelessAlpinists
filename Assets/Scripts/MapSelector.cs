@@ -18,7 +18,7 @@ public class MapSelector : MonoBehaviour
         foreach (Map map in GameManager.i.maps)
         {
             MapUI ui = Instantiate(mapPrefab, mapList).GetComponent<MapUI>();
-            ui.image.sprite = map.sprite;
+            ui.image.sprite = Resources.Load<Sprite>(map.sceneName);
             ui.nameText.text = map.name;
         }
 
@@ -56,7 +56,6 @@ public class MapSelector : MonoBehaviour
 [Serializable]
 public struct Map
 {
-    public Sprite sprite;
     public string sceneName;
     public string name;
 }
