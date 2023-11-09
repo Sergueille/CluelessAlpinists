@@ -54,32 +54,27 @@ Shader "Unlit/MapRenderer"
             fixed4 frag (v2f i) : SV_Target
             {
                 float4 cur = tex2D(_MainTex, i.uv);
-                float4 up = tex2D(_MainTex, i.uv + float2(0.001, 0.003));
+                float4 up = tex2D(_MainTex, i.uv + float2(0.002, 0.006));
                 
                 float attAmount = 10;
                 float att = clamp(i.uv.x * attAmount, 0, 1)
                             * clamp(attAmount - i.uv.x * attAmount, 0, 1)
                             * clamp(i.uv.y * attAmount, 0, 1)
                             * clamp(attAmount - i.uv.y * attAmount, 0, 1);
-
-                // float4 cloudTex = tex2D(_Cloud, i.uv);
-                // float4 cloudTexUp = tex2D(_Cloud, i.uv + float2(0.001, 0.003));
-                // float cloudDiff = abs(cloudTex.r - cloudTexUp.r) * 4;
+                float att2Amount = 5;
+                float att2 = clamp(i.uv.x * att2Amount, 0, 1)
+                            * clamp(att2Amount - i.uv.x * att2Amount, 0, 1)
+                            * clamp(i.uv.y * att2Amount, 0, 1)
+                            * clamp(att2Amount - i.uv.y * att2Amount, 0, 1);
 
                 float2 centerUV = i.uv - float2(0.5, 0.5);
 
-                // float cloud = 1 - clamp(0.5 - length(i.uv - float2(0.5, 0.5)), 0, 1);
-                float att2 = clamp(0.5 - centerUV.x - centerUV.y, 0, 1);
+                float strokeAmount = abs(cur.r - up.r) + abs(cur.g - up.g) + abs(cur.b - up.b);
+                strokeAmount = clamp(sqrt(strokeAmount) * 1, 0, 1);
 
-                float val = abs(cur.r - up.r) + abs(cur.g - up.g) + abs(cur.b - up.b);
-                val = clamp(sqrt(val) * 1, 0, 1);
-
-                // val += cloud > 0.99 ? 1 : 0;
-
-                val *= att;
-
-                return float4(0, 0, 0, val);
-                // return float4(float3(0.878, 0.729, 0.494) * (1 - val), 1);
+                strokeAmount *= att;
+ 
+                return float4(cur.rgb * (1 - strokeAmount), 1 - (1 - strokeAmount) * (1 - cur.a * att2 * 0.5));
             }
 
             ENDCG

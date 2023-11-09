@@ -89,5 +89,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   replacementShader: {fileID: 4800000, guid: bfcdfecb6a166d945a9eb444aacf95a1, type: 3}
-  resolution: {x: 1920, y: 1080}
+  resolution: {x: 960, y: 540}
   blitMaterial: {fileID: 2100000, guid: d9b697d6b65f27149a65a3ba3a226ced, type: 2}
