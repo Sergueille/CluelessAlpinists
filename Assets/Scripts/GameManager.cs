@@ -70,6 +70,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Sprite[] skins;
     [SerializeField] private CanvasGroup pauseScreen;
     [SerializeField] private MovementDescr pauseScreenMovement;
+    [SerializeField] private MovementDescr cardExchangeMovement;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -412,7 +413,7 @@ public class GameManager : MonoBehaviour
 
             if (!CurrentPlayer.finished && bonusAtEndOfTurn == BonusType.exchange)
             {
-                SetInfoText("Choisissez des cartes a échanger");
+                SetInfoText("Choisissez deux cartes a échanger");
 
                 selectedExchangeNewCard = null;
                 selectedExchangeDeckCard = null;
@@ -457,7 +458,13 @@ public class GameManager : MonoBehaviour
                 CurrentPlayer.RemoveCard(selectedExchangeDeckCard);
                 CurrentPlayer.AddAction(selectedExchangeNewCard.type);
 
-                yield return new WaitForSeconds(smallDelay);
+                Vector3 newPos = selectedExchangeNewCard.transform.position;
+                Vector3 deckPos = selectedExchangeDeckCard.transform.position;
+
+                cardExchangeMovement.DoMovement(pos => selectedExchangeDeckCard.transform.localPosition = pos, deckPos, newPos);
+                cardExchangeMovement.DoMovement(pos => selectedExchangeNewCard.transform.localPosition = pos, newPos, deckPos);
+
+                yield return new WaitForSeconds(cardExchangeMovement.duration + smallDelay);
 
                 for (int i = 0; i < deckCards.Length; i++)
                 {

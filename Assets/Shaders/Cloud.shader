@@ -64,7 +64,6 @@ Shader "Unlit/Cloud"
                 fixed4 col = tex2D(_MainTex, float2(i.uv.x + deltaX, i.uv.y + deltaY));
                 col.a *= _Alpha;
 
-                if (col.a < 0.05) discard;
                 return col;
             }
             ENDCG

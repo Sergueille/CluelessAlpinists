@@ -119,7 +119,6 @@ public class SoundManager : MonoBehaviour
 
         PlaySoundInstance(start, false);
 
-        Debug.Log("Add");
         loopSounds.Add(res);
 
         return res;
@@ -182,8 +181,6 @@ public class SoundManager : MonoBehaviour
 
         public void Stop()
         {
-            Debug.Log("STOP - " + (startedLooping ? "" : "NOT STARTED"));
-
             if (startedLooping)
             {
                 loopHandle.Stop();

@@ -237,7 +237,6 @@ public class Character : MonoBehaviour
         if (coll.gameObject.layer == LayerMask.NameToLayer("WindZone"))
         {
             windZoneCollisionCount++;
-            Debug.Log(owner.info.name + " enter");
         }
     }
 
@@ -246,7 +245,6 @@ public class Character : MonoBehaviour
         if (coll.gameObject.layer == LayerMask.NameToLayer("WindZone"))
         {
             windZoneCollisionCount--;
-            Debug.Log(owner.info.name + " exit");
         }
     }
 
