@@ -71,6 +71,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private CanvasGroup pauseScreen;
     [SerializeField] private MovementDescr pauseScreenMovement;
     [SerializeField] private MovementDescr cardExchangeMovement;
+    [SerializeField] private MovementDescr cardExchangeAppearMovement;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -153,15 +154,18 @@ public class GameManager : MonoBehaviour
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
             transitionMaterial.SetFloat("_Size", 0);
             SceneManager.LoadScene(mapToLoad.sceneName);
-            AudioListener.volume = 1;
+            AudioListener.volume = 0;
             transitionMovement.Do(t => {}) // HACK: setOnUpdate overrides this
             .setOnUpdate((float t) => {
                 transitionMaterial.SetFloat("_Size", t);
                 CameraController.i.mainCamera.transform.position = MapManager.i.startZone.position;
+                
             })
             .setOnComplete(() => {
                 StartRace(menuInfos);
             });
+
+            transitionMovement.DoNormalized(t => AudioListener.volume = t);
         });
     }
 
@@ -404,6 +408,8 @@ public class GameManager : MonoBehaviour
             }
 
             CurrentPlayer.DiscardHand();
+            
+            SetInfoText("");
 
             if (!CurrentPlayer.finished)
             {
@@ -418,13 +424,17 @@ public class GameManager : MonoBehaviour
                 selectedExchangeNewCard = null;
                 selectedExchangeDeckCard = null;
 
+                // Deck cards
                 Card[] deckCards = new Card[CurrentPlayer.allActions.Count];
                 for (int i = 0; i < CurrentPlayer.allActions.Count; i++)
                 {
                     Card card = InstantiateCard(CurrentPlayer.allActions[i]);
                     card.moveOnHover = true;
                     deckCards[i] = card;
-                    card.transform.localPosition = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
+
+                    Vector3 targetPosition = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
+                    cardDrawMovement.DoReverse(t => card.transform.localPosition = targetPosition + new Vector3(0, -1, 0) * t);
+
                     card.clickCallback = c => {
                         selectedExchangeDeckCard = c;
                         for (int i = 0; i < deckCards.Length; i++)
@@ -435,6 +445,7 @@ public class GameManager : MonoBehaviour
                     };
                 } 
 
+                // New cards
                 ActionType[] randomActions = GetRandomActions();
                 Card[] randomCards = new Card[randomActions.Length];
                 for (int i = 0; i < randomActions.Length; i++)
@@ -442,7 +453,10 @@ public class GameManager : MonoBehaviour
                     Card card = InstantiateCard(randomActions[i]);
                     card.moveOnHover = true;
                     randomCards[i] = card;
-                    card.transform.localPosition = new Vector3(GetHandXPosition(i, randomActions.Length), handYPosition + 300, 0); // TEST
+
+                    Vector3 targetPosition = new Vector3(GetHandXPosition(i, randomActions.Length), handYPosition + 300, 0);
+                    cardExchangeAppearMovement.DoReverse(t => card.transform.localPosition = targetPosition + Vector3.up * t);
+
                     card.clickCallback = c => {
                         selectedExchangeNewCard = c;
                         for (int i = 0; i < randomCards.Length; i++)
@@ -458,8 +472,8 @@ public class GameManager : MonoBehaviour
                 CurrentPlayer.RemoveCard(selectedExchangeDeckCard);
                 CurrentPlayer.AddAction(selectedExchangeNewCard.type);
 
-                Vector3 newPos = selectedExchangeNewCard.transform.position;
-                Vector3 deckPos = selectedExchangeDeckCard.transform.position;
+                Vector3 newPos = selectedExchangeNewCard.transform.localPosition;
+                Vector3 deckPos = selectedExchangeDeckCard.transform.localPosition;
 
                 cardExchangeMovement.DoMovement(pos => selectedExchangeDeckCard.transform.localPosition = pos, deckPos, newPos);
                 cardExchangeMovement.DoMovement(pos => selectedExchangeNewCard.transform.localPosition = pos, newPos, deckPos);
@@ -468,12 +482,22 @@ public class GameManager : MonoBehaviour
 
                 for (int i = 0; i < deckCards.Length; i++)
                 {
-                    Destroy(deckCards[i].gameObject);
+                    Card currentCard = deckCards[i];
+                    if (currentCard == selectedExchangeDeckCard) currentCard = selectedExchangeNewCard; // Swap the animations for exchanged cards
+
+                    Vector3 startPosition = currentCard.transform.localPosition;
+                    cardDrawMovement.Do(t => currentCard.transform.localPosition = startPosition + Vector3.down * t)
+                        .setOnComplete(() => Destroy(currentCard.gameObject));
                 }                
                 
                 for (int i = 0; i < randomCards.Length; i++)
                 {
-                    Destroy(randomCards[i].gameObject);
+                    Card currentCard = randomCards[i];
+                    if (currentCard == selectedExchangeNewCard) currentCard = selectedExchangeDeckCard; // Same but inverted
+
+                    Vector3 startPosition = currentCard.transform.localPosition;
+                    cardExchangeAppearMovement.Do(t => currentCard.transform.localPosition = startPosition + Vector3.up * t)
+                        .setOnComplete(() => Destroy(currentCard.gameObject));
                 }
             }
 

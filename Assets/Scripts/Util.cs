@@ -66,6 +66,7 @@ public struct MovementDescr
 
     public LTDescr Do(System.Action<float> callback)
     {
+        callback(0);
         descr = LeanTween.value(0, amplitude, duration).setOnUpdate(callback).setEase(easeType);
         tweenID = descr.id;
         return descr;
@@ -73,6 +74,7 @@ public struct MovementDescr
 
     public LTDescr DoReverse(System.Action<float> callback)
     {
+        callback(amplitude);
         descr = LeanTween.value(amplitude, 0, duration).setOnUpdate(callback).setEase(easeType);
         tweenID = descr.id;
         return descr;
@@ -80,6 +82,7 @@ public struct MovementDescr
 
     public LTDescr DoNormalized(System.Action<float> callback)
     {
+        callback(0);
         descr = LeanTween.value(0, 1, duration).setOnUpdate(callback).setEase(easeType);
         tweenID = descr.id;
         return descr;
@@ -87,6 +90,7 @@ public struct MovementDescr
 
     public LTDescr DoMovement(System.Action<Vector3> callback, Vector3 start, Vector3 end)
     {
+        callback(start);
         descr = LeanTween.value(0, 1, duration).setOnUpdate(t => callback(start * (1 - t) + end * t)).setEase(easeType);
         tweenID = descr.id;
         return descr;
