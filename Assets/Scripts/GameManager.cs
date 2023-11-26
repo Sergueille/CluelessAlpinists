@@ -78,6 +78,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MovementDescr transitionMovement;
     [SerializeField] private Material transitionMaterial;
 
+    [NonSerialized] private LocalizationManager.Language language = LocalizationManager.Language.systemLanguage;
 
     [NonSerialized] public bool shouldContinue;
 
@@ -114,6 +115,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
        i = this;
+       LocalizationManager.Init();
     }
 
     private void Start()
@@ -138,6 +140,8 @@ public class GameManager : MonoBehaviour
 
         transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
         AudioListener.volume = 1;
+        
+        LocalizationManager.UpdateLanguage(language);
     }
 
     public void Play(int mapId)
@@ -207,7 +211,7 @@ public class GameManager : MonoBehaviour
             // Show continue button
             ToggleContinueButton(true);
 
-            SetInfoText("Réordonnez les cartes");
+            SetInfoText(LocalizationManager.GetValue("reorder"));
 
             yield return new WaitUntil(() => shouldContinue || CurrentPlayer.finished);
             shouldContinue = false;
@@ -236,7 +240,7 @@ public class GameManager : MonoBehaviour
 
                 if (type == ActionType.jump)
                 {
-                    SetInfoText("Cliquez pour sauter");
+                    SetInfoText(LocalizationManager.GetValue("jump"));
                     SetPointerType(PointerType.aim);
 
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
@@ -261,7 +265,7 @@ public class GameManager : MonoBehaviour
                 {
                     yield return new WaitForFixedUpdate();
 
-                    SetInfoText("Maintenez pour vous propulser");
+                    SetInfoText(LocalizationManager.GetValue("jetpack"));
                     SetPointerType(PointerType.aim);
 
                     float fuel = jetpackFuel;
@@ -308,7 +312,7 @@ public class GameManager : MonoBehaviour
                 }
                 else if (type == ActionType.bomb || type == ActionType.invertedBomb)
                 {
-                    SetInfoText("Cliquez pour lancer");
+                    SetInfoText(LocalizationManager.GetValue("throw"));
                     SetPointerType(PointerType.aim);
                     
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
@@ -331,7 +335,7 @@ public class GameManager : MonoBehaviour
                 }
                 else if (type == ActionType.balloon)
                 {
-                    SetInfoText("Attendez que les ballons éclatent");
+                    SetInfoText(LocalizationManager.GetValue("balloons"));
 
                     float startTime = Time.time;
 
@@ -353,7 +357,7 @@ public class GameManager : MonoBehaviour
                 }
                 else if (type == ActionType.grappling)
                 {
-                    SetInfoText("Cliquez pour lancer le grappin");
+                    SetInfoText(LocalizationManager.GetValue("grappling"));
                     SetPointerType(PointerType.aim);
                     
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
@@ -380,7 +384,7 @@ public class GameManager : MonoBehaviour
                             
                             SetPointerType(PointerType.normal);
 
-                            SetInfoText("Cliquez pour lâcher le grappin");
+                            SetInfoText(LocalizationManager.GetValue("grappling_end"));
                             
                             SoundManager.SoundHandle handle = SoundManager.PlaySound("grap_loop", true);
 
@@ -419,7 +423,7 @@ public class GameManager : MonoBehaviour
 
             if (!CurrentPlayer.finished && bonusAtEndOfTurn == BonusType.exchange)
             {
-                SetInfoText("Choisissez deux cartes a échanger");
+                SetInfoText(LocalizationManager.GetValue("exchange"));
 
                 selectedExchangeNewCard = null;
                 selectedExchangeDeckCard = null;
@@ -748,5 +752,13 @@ public class GameManager : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    public void ChangeLanguage()
+    {
+        language++;
+        if (language == LocalizationManager.Language.maxValue)
+            language = LocalizationManager.Language.systemLanguage + 1;
+        LocalizationManager.UpdateLanguage(language);
     }
 }
