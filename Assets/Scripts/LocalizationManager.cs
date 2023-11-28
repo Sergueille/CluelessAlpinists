@@ -61,10 +61,11 @@ public static class LocalizationManager
         if (currentDict == null)
             UpdateLanguage(currentLanguage);
 
-        if (currentDict.ContainsKey(key))
-            return currentDict[key];
+        string lowerKey = key.ToLower();
+        if (currentDict.ContainsKey(lowerKey))
+            return currentDict[lowerKey ];
 
-        Debug.LogError($"Localisation key {key} not found!");
+        Debug.LogError($"Localisation key {lowerKey} not found!");
 
         return key;
     }

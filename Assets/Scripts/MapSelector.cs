@@ -19,7 +19,7 @@ public class MapSelector : MonoBehaviour
         {
             MapUI ui = Instantiate(mapPrefab, mapList).GetComponent<MapUI>();
             ui.image.sprite = Resources.Load<Sprite>(map.sceneName);
-            ui.nameText.text = map.name;
+            ui.nameText.text = LocalizationManager.GetValue(map.sceneName);
         }
 
         SelectMap(currentMap);
@@ -57,6 +57,5 @@ public class MapSelector : MonoBehaviour
 public struct Map
 {
     public string sceneName;
-    public string name;
 }
 
