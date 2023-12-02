@@ -139,7 +139,6 @@ public class GameManager : MonoBehaviour
         }
 
         transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
-        Debug.Log($"A - {AudioListener.volume}");
         AudioListener.volume = 1;
         
         LocalizationManager.UpdateLanguage(language);
@@ -751,12 +750,10 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        //transitionMovement.DoNormalized(t => {AudioListener.volume = 1 - t; Debug.Log($"B - {AudioListener.volume}");});
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setIgnoreTimeScale(true).setOnComplete(() => {
             Time.timeScale = 1;
             finishScreenCanvas.alpha = 0;
             AudioListener.volume = 1;
-            Debug.Log($"C - {AudioListener.volume}");
             SceneManager.LoadScene("Menu");
 
             Destroy(pointer.gameObject);

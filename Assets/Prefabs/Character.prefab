@@ -5260,7 +5260,7 @@ MonoBehaviour:
   linePointsCount: 100
   dashedLineOffsetSpeed: -1
   dashedFadeSpeed: 2
-  grapplingStartPosition: 0.5
+  grapplingStartPosition: 0
   balloons: {fileID: 5900648445083634875}
   balloonsScaleMovement:
     amplitude: 0.59
