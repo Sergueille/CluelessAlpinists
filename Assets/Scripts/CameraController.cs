@@ -44,4 +44,10 @@ public class CameraController : MonoBehaviour
         Vector2 smoothedPos = Vector2.SmoothDamp(transform.position, lastTargetPosition, ref cameraVelocity, cameraSpeed);
         transform.position = new Vector3(smoothedPos.x, smoothedPos.y, startZ);
     }
+
+    public void SetPositionEndTargetImmediate(Vector3 pos)
+    {
+        transform.position = pos;
+        lastTargetPosition = pos;
+    }
 }

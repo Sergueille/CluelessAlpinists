@@ -139,6 +139,7 @@ public class GameManager : MonoBehaviour
         }
 
         transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
+        Debug.Log($"A - {AudioListener.volume}");
         AudioListener.volume = 1;
         
         LocalizationManager.UpdateLanguage(language);
@@ -162,10 +163,13 @@ public class GameManager : MonoBehaviour
             transitionMovement.Do(t => {}) // HACK: setOnUpdate overrides this
             .setOnUpdate((float t) => {
                 transitionMaterial.SetFloat("_Size", t);
-                CameraController.i.mainCamera.transform.position = MapManager.i.startZone.position;
-                
+                CameraController.i.followCharacter = false;
+                Vector3 startPos = MapManager.i.finishTrigger.transform.position;
+                startPos.z = CameraController.i.transform.position.z;
+                CameraController.i.SetPositionEndTargetImmediate(startPos);
             })
             .setOnComplete(() => {
+                CameraController.i.followCharacter = true;
                 StartRace(menuInfos);
             });
 
@@ -379,8 +383,12 @@ public class GameManager : MonoBehaviour
                                 grapplingTouchedSomething = true;
                             });
 
-                            yield return new WaitUntil(() => (grapplingTouchedSomething && !Input.GetMouseButton(0)) || CurrentPlayer.finished);
+                            float throwTime = Time.time;
+
+                            yield return new WaitUntil(() => (grapplingTouchedSomething && !Input.GetMouseButton(0)) || CurrentPlayer.finished || Time.time - throwTime > 10);
                             yield return new WaitForFixedUpdate();
+
+                            if (!grapplingTouchedSomething) break; // Prevent soflock if grappling went out of the map
                             
                             SetPointerType(PointerType.normal);
 
@@ -664,29 +672,36 @@ public class GameManager : MonoBehaviour
 
         raceStarted = false;
 
-        for (int i = 1; i < PlayerCount; i++)
-        {
-            // Search player with rank
+        if (PlayerCount > 1)
+        {        
+            for (int i = 1; i < PlayerCount; i++)
+            {
+                // Search player with rank
+                foreach (Player p in players)
+                {
+                    if (p.rank == i)
+                    {
+                        InstantiateRankEntry(p);
+                        break;
+                    }
+                }
+                
+                yield return new WaitForSeconds(smallDelay);
+            }
+
+            // Search last player
             foreach (Player p in players)
             {
-                if (p.rank == i)
+                if (p.rank == -1)
                 {
                     InstantiateRankEntry(p);
                     break;
                 }
             }
-            
-            yield return new WaitForSeconds(smallDelay);
         }
-
-        // Search last player
-        foreach (Player p in players)
+        else
         {
-            if (p.rank == -1)
-            {
-                InstantiateRankEntry(p);
-                break;
-            }
+            InstantiateRankEntry(players[0]);
         }
 
         shouldContinue = false;
@@ -736,12 +751,13 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        transitionMovement.DoNormalized(t => AudioListener.volume = 1 - t);
+        //transitionMovement.DoNormalized(t => {AudioListener.volume = 1 - t; Debug.Log($"B - {AudioListener.volume}");});
         transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setIgnoreTimeScale(true).setOnComplete(() => {
             Time.timeScale = 1;
             finishScreenCanvas.alpha = 0;
-            SceneManager.LoadScene("Menu");
             AudioListener.volume = 1;
+            Debug.Log($"C - {AudioListener.volume}");
+            SceneManager.LoadScene("Menu");
 
             Destroy(pointer.gameObject);
             Destroy(CameraController.i.gameObject);

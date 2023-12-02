@@ -68,13 +68,20 @@ public class Character : MonoBehaviour
         if (GameManager.i.CurrentPlayerCharacter == this)
         {
             Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer("CurrentPlayerCharacter"));
+        }
+        else
+        {
+            Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer("Character"));
+        }
+
+        if (GameManager.i.CurrentPlayerCharacter == this && GameManager.i.PlayerCount > 1)
+        {
             turnArrow.color = new Color(1, 1, 1, 1);
             turnArrow.transform.position = transform.position + (Vector3)arrowStartPosition + Vector3.up * turnArrowSineAmplitude * Mathf.Sin(Time.time * turnArrowSineFrequency);
             turnArrow.transform.rotation = Quaternion.identity;
         }
         else
         {
-            Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer("Character"));
             turnArrow.color = new Color(1, 1, 1, 0);
         }
 

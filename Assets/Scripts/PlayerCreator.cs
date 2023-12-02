@@ -35,6 +35,7 @@ public class PlayerCreator : MonoBehaviour
 
         if (PlayerPrefs.HasKey(prefKey))
             SetName(PlayerPrefs.GetString(prefKey));
+        else SetName("");
     }
 
     public void SetName(string newName)
@@ -56,7 +57,7 @@ public class PlayerCreator : MonoBehaviour
             activatedCount++;
         }
 
-        continueButton.interactable = activatedCount >= 2;
+        continueButton.interactable = activatedCount >= 1;
 
         PlayerPrefs.SetString(prefKey, newName);
     }

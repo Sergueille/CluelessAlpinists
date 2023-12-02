@@ -28,11 +28,11 @@ public class RankingEntry : MonoBehaviour
 
         if (player.rank == -1)
         {
-            turnsText.text = "Pas fini";
+            turnsText.text = LocalizationManager.GetValue("not_finished");
         }
         else
         {
-            turnsText.text = player.turns.ToString() + " tours";
+            turnsText.text = player.turns.ToString() + " " + LocalizationManager.GetValue("turns");
         }
 
         skin.sprite = player.info.skin;
