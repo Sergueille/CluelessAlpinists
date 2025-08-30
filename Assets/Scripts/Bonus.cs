@@ -28,9 +28,8 @@ public class Bonus : MonoBehaviour
 
     public void Touch()
     {
-        ps.Stop();
-        disappearMovement.DoNormalized(t => sr.transform.localScale = Vector3.one * (1 - t));
-        SoundManager.PlaySound("bonus");
-        type = BonusType.none;
+        // ps.Stop();
+        // disappearMovement.DoNormalized(t => sr.transform.localScale = Vector3.one * (1 - t));
+        // type = BonusType.none;
     }
 }

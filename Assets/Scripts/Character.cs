@@ -47,6 +47,8 @@ public class Character : MonoBehaviour
 
     private bool hovered;
 
+    public bool shouldPreventJumpCollisisons = false;
+
     private int windZoneCollisionCount = 0;
 
     public void Init(Player owner) 
@@ -67,7 +69,8 @@ public class Character : MonoBehaviour
     {
         if (GameManager.i.CurrentPlayerCharacter == this)
         {
-            Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer("CurrentPlayerCharacter"));
+            string layerName = shouldPreventJumpCollisisons ? "JumpingCurrentPlayerCharacter" : "CurrentPlayerCharacter";
+            Util.SetLayerWithChildren(gameObject, LayerMask.NameToLayer(layerName));
         }
         else
         {
@@ -133,7 +136,7 @@ public class Character : MonoBehaviour
         return contactCount > 0;
     }
 
-    public void DisplayJumpTrajectory(Vector2 force)
+    public void DisplayJumpTrajectory(Vector2 force, float damping)
     {
         Vector3[] positions = new Vector3[linePointsCount];
         Vector2 velocity = force;
@@ -141,8 +144,12 @@ public class Character : MonoBehaviour
         positions[0] = pos;
         for (int i = 1; i < linePointsCount; i++)
         {
-            velocity += Physics2D.gravity * linePointsDeltaTime;
+            velocity += Physics2D.gravity * linePointsDeltaTime * 0.5f;
             pos += velocity * linePointsDeltaTime;
+            velocity += Physics2D.gravity * linePointsDeltaTime * 0.5f;
+
+            velocity *= 1 - damping * linePointsDeltaTime;
+            
             positions[i] = new Vector3(pos.x, pos.y, 0);
         }
 
@@ -224,8 +231,16 @@ public class Character : MonoBehaviour
         Bonus b = coll.gameObject.GetComponent<Bonus>();
         if (b != null && b.type != BonusType.none)
         {
-            if (owner == GameManager.i.CurrentPlayer)
-                GameManager.i.bonusAtEndOfTurn = b.type;
+            if (owner == GameManager.i.CurrentPlayer && b.type == BonusType.exchange)
+            {
+                if (GameManager.i.bonusAtEndOfTurn != BonusType.exchange)
+                {
+                    SoundManager.PlaySound("bonus");
+                    GameManager.i.bonusAtEndOfTurn = BonusType.exchange;
+                    GameManager.i.ShowExchangeIcon();
+                }
+
+            }
 
             b.Touch();
         }

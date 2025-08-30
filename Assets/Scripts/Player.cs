@@ -21,11 +21,11 @@ public class Player
     {
         allActions = new List<ActionType> {
             ActionType.jump,
+            ActionType.jump,
             ActionType.bomb,
-            ActionType.jetpack,
             ActionType.grappling,
             ActionType.balloon,
-            ActionType.balloon,
+            ActionType.cloudPlatform,
         };
 
         deck = new List<ActionType>(allActions);
@@ -93,9 +93,9 @@ public class Player
 
             Vector3 startPosition = hand[i].transform.localPosition;
             Card card = hand[i];
-            GameManager.i.cardDrawMovement.Do(t => 
-                card.transform.localPosition = startPosition + new Vector3(0, -1, 0) * t
-            ).setOnComplete(() => GameObject.Destroy(card.gameObject));
+            GameManager.i.cardDrawMovement.Do(t => {
+                if (card != null) card.transform.localPosition = startPosition + new Vector3(0, -1, 0) * t;
+            }).setOnComplete(() => GameObject.Destroy(card.gameObject));
         }
 
         hand.Clear();

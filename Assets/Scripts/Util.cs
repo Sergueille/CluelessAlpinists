@@ -5,7 +5,7 @@ using System.Text;
 
 public enum ActionType
 {
-    jump, jetpack, grappling, bomb, balloon, invertedBomb, maxValue
+    jump, jetpack, grappling, bomb, balloon, invertedBomb, cloudPlatform, maxValue
 }
 
 public static class Util
@@ -31,7 +31,8 @@ public static class Util
             list[i] = tmp;
         } 
     }
-        public static void SetLayerWithChildren(GameObject go, int layer)
+    
+    public static void SetLayerWithChildren(GameObject go, int layer)
     {
         go.layer = layer;
 

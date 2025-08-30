@@ -157,7 +157,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if (clickCallback == null && !draggable)
         {
             typeBeforeEntering = GameManager.i.pointerType;
-            GameManager.i.SetPointerType(PointerType.notAllowed);
+            GameManager.i.cursorNotAllowedOverride = true;
         }
 
         hovered = true;
@@ -173,7 +173,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         if (clickCallback == null && !draggable)
         {
-            GameManager.i.SetPointerType(typeBeforeEntering);
+            GameManager.i.cursorNotAllowedOverride = false;
         }
 
         hovered = false;

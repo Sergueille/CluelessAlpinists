@@ -14,6 +14,9 @@
 - tadaa FunWithSound CC0 (https://freesound.org/people/FunWithSound/sounds/456966/)
 - bonus unfa CC0 (https://freesound.org/people/unfa/sounds/187119/)
 - wind juskiddink CCBY (https://freesound.org/people/juskiddink/sounds/136287/) 
+- pchit Rudmer_Rotteveel CC0 (https://freesound.org/people/Rudmer_Rotteveel/sounds/536409/)
+- tuto_in twinpix CC0 (https://freesound.org/people/twinpix/sounds/533350/)
+- tuto_out twinpix CC0 (https://freesound.org/people/twinpix/sounds/533350/)
 
 Musics:
 - Symphony in F major, performed by Das Orchester Tsumugi, CCBY (https://clara.imslp.org/fr/work/349026)

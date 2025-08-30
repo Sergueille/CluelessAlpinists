@@ -35,6 +35,11 @@ public class Grappling : MonoBehaviour
     {
         if (attached)
         {
+            if (attachParent == null)
+            {
+                Destroy(gameObject);
+            }
+
             transform.position = attachParent.TransformPoint(relativePosition);
         }
 

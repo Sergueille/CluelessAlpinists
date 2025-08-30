@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,8 +31,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float jetpackForce = 8;
     [SerializeField] private float jetpackFuel = 2; // Seconds
     [SerializeField] private float jetPackVerticalMultiplier = 2;
+    [SerializeField] private float jumpCollisionPreventionDuration = 0.3f;
     [SerializeField] private float balloonForce = 12;
     [SerializeField] private float balloonDuration = 12;
+    [SerializeField] private float balloonSafeDuration = 0.3f;
     [SerializeField] private float balloonTargetVelocity = 3;
     [SerializeField] private float bombThrowForce = 10;
     [SerializeField] private float bombThrowVerticalMultiplier = 2;
@@ -40,8 +43,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float grapplingForce = 13;
     [SerializeField] private float grapplingMaxDuration = 6;
     [SerializeField] private float grapplingTargetDistance = 0.5f;
+    [SerializeField] private float grapplingSafeDuration = 0.3f;
     [SerializeField] private float turnEndDelay = 2.1f;
     [SerializeField] private float turnEndVelocityThreshold = 1.0f;
+    [SerializeField] private float cloudPlatformMaxDistance = 5.0f;
+    [SerializeField] private float cloudPlatformSafeDuration = 0.3f;
 
     public Sprite[] itemsSprites;
 
@@ -72,6 +78,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MovementDescr pauseScreenMovement;
     [SerializeField] private MovementDescr cardExchangeMovement;
     [SerializeField] private MovementDescr cardExchangeAppearMovement;
+    [SerializeField] private MovementDescr cloudPlatformAppearMovement;
+    [SerializeField] private GameObject cloudPlatformPrefab;
+    public RectTransform exchangeIcon;
+    public ParticleSystem exchangeIconParticles;
+    public MovementDescr exchangeIconAppearMovement;
+    public MovementDescr exchangeIconRotateMovement;
+
+    [HideInInspector] public bool cursorNotAllowedOverride = false;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -106,7 +120,7 @@ public class GameManager : MonoBehaviour
     {
         get => players[currentPlayerID];
     }
-    
+
     public Character CurrentPlayerCharacter
     {
         get => players[currentPlayerID].character;
@@ -114,8 +128,8 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-       i = this;
-       LocalizationManager.Init();
+        i = this;
+        LocalizationManager.Init();
     }
 
     private void Start()
@@ -140,7 +154,9 @@ public class GameManager : MonoBehaviour
 
         transitionMovement.Do(t => transitionMaterial.SetFloat("_Size", t));
         AudioListener.volume = 1;
-        
+
+        HideExchangeIcon();
+
         LocalizationManager.UpdateLanguage(language);
     }
 
@@ -148,26 +164,29 @@ public class GameManager : MonoBehaviour
     {
         Map mapToLoad = maps[mapId];
 
-        DontDestroyOnLoad(gameObject); 
-        DontDestroyOnLoad(CameraController.i.gameObject); 
-        DontDestroyOnLoad(pointer); 
+        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(CameraController.i.gameObject);
+        DontDestroyOnLoad(pointer);
 
         PanelsManager.i.HidePanel();
 
         transitionMovement.DoNormalized(t => AudioListener.volume = 1 - t);
-        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() => {
+        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setOnComplete(() =>
+        {
             transitionMaterial.SetFloat("_Size", 0);
             SceneManager.LoadScene(mapToLoad.sceneName);
             AudioListener.volume = 0;
-            transitionMovement.Do(t => {}) // HACK: setOnUpdate overrides this
-            .setOnUpdate((float t) => {
+            transitionMovement.Do(t => { }) // HACK: setOnUpdate overrides this
+            .setOnUpdate((float t) =>
+            {
                 transitionMaterial.SetFloat("_Size", t);
                 CameraController.i.followCharacter = false;
                 Vector3 startPos = MapManager.i.finishTrigger.transform.position;
                 startPos.z = CameraController.i.transform.position.z;
                 CameraController.i.SetPositionEndTargetImmediate(startPos);
             })
-            .setOnComplete(() => {
+            .setOnComplete(() =>
+            {
                 CameraController.i.followCharacter = true;
                 StartRace(menuInfos);
             });
@@ -182,6 +201,8 @@ public class GameManager : MonoBehaviour
         pointerPosition.z = 0;
         pointer.transform.position = pointerPosition;
         Cursor.visible = false;
+
+        pointer.sprite = pointers[cursorNotAllowedOverride ? (int)PointerType.notAllowed : (int)pointerType];
     }
 
     private void StartRace(PlayerInfo[] infos)
@@ -193,8 +214,9 @@ public class GameManager : MonoBehaviour
         raceStarted = true;
         finishedRace = false;
         CameraController.i.followCharacter = true;
+        HideExchangeIcon();
         raceCoroutine = StartCoroutine(RaceCoroutine());
-    } 
+    }
 
     public IEnumerator RaceCoroutine()
     {
@@ -243,25 +265,42 @@ public class GameManager : MonoBehaviour
 
                 if (type == ActionType.jump)
                 {
-                    SetInfoText(LocalizationManager.GetValue("jump"));
                     SetPointerType(PointerType.aim);
 
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                     while (true && !CurrentPlayer.finished)
                     {
-                        Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jumpForce;
-                        force.y *= jumpVerticalMultiplier;
-                        CurrentPlayerCharacter.DisplayJumpTrajectory(force);
+                        if (CurrentPlayerCharacter.IsTouchingGround())
+                        {
+                            SetInfoText(LocalizationManager.GetValue("jump"));
+                            SetPointerType(PointerType.aim);
+
+                            Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jumpForce;
+                            force.y *= jumpVerticalMultiplier;
+                            CurrentPlayerCharacter.DisplayJumpTrajectory(force, CurrentPlayerCharacter.GetComponent<Rigidbody2D>().linearDamping);
+
+                            if (Input.GetMouseButton(0))
+                            {
+                                CurrentPlayerCharacter.AddImpulse(force);
+                                SoundManager.PlaySound("boing");
+
+                                CurrentPlayerCharacter.shouldPreventJumpCollisisons = true;
+
+                                yield return new WaitForSeconds(jumpCollisionPreventionDuration);
+
+                                CurrentPlayerCharacter.shouldPreventJumpCollisisons = false;
+
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            SetInfoText(LocalizationManager.GetValue("jump_wait"));
+                            SetPointerType(PointerType.notAllowed);
+                        }
 
                         yield return new WaitForEndOfFrame();
-
-                        if (CurrentPlayerCharacter.IsTouchingGround() && Input.GetMouseButton(0))
-                        {
-                            CurrentPlayerCharacter.AddImpulse(force);
-                            SoundManager.PlaySound("boing");
-                            break;
-                        }
                     }
                 }
                 else if (type == ActionType.jetpack)
@@ -286,8 +325,8 @@ public class GameManager : MonoBehaviour
                             fuel -= Time.fixedDeltaTime;
 
                             CurrentPlayerCharacter.ToggleJetpackParticles(true, force);
-                            
-                            if (handle == null) 
+
+                            if (handle == null)
                             {
                                 handle = SoundManager.PlayLoopSound("ext_begin", "ext_loop", "ext_end");
                             }
@@ -317,14 +356,14 @@ public class GameManager : MonoBehaviour
                 {
                     SetInfoText(LocalizationManager.GetValue("throw"));
                     SetPointerType(PointerType.aim);
-                    
+
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                     while (true && !CurrentPlayer.finished)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * bombThrowForce;
                         force.y *= bombThrowVerticalMultiplier;
-                        CurrentPlayerCharacter.DisplayJumpTrajectory(force);
+                        CurrentPlayerCharacter.DisplayJumpTrajectory(force, 0.0f);
 
                         yield return new WaitForEndOfFrame();
 
@@ -345,11 +384,19 @@ public class GameManager : MonoBehaviour
                     CurrentPlayerCharacter.ShowBalloons();
                     SoundManager.PlaySound("balloon");
 
-                    while (Time.time < startTime + balloonDuration && !CurrentPlayer.finished)
+                    bool haveReleased = false;
+
+                    while (Time.time < startTime + balloonDuration && !CurrentPlayer.finished
+                       && (!Input.GetMouseButton(0) || !haveReleased || Time.time < startTime + balloonSafeDuration))
                     {
-                        if (CurrentPlayerCharacter.rb.velocity.y < balloonTargetVelocity)
+                        if (CurrentPlayerCharacter.rb.linearVelocity.y < balloonTargetVelocity)
                         {
                             CurrentPlayerCharacter.AddForce(Vector2.up * balloonForce);
+                        }
+
+                        if (!Input.GetMouseButton(0))
+                        {
+                            haveReleased = true;
                         }
 
                         yield return new WaitForFixedUpdate();
@@ -362,14 +409,14 @@ public class GameManager : MonoBehaviour
                 {
                     SetInfoText(LocalizationManager.GetValue("grappling"));
                     SetPointerType(PointerType.aim);
-                    
+
                     yield return new WaitUntil(() => !Input.GetMouseButton(0));
 
                     while (!CurrentPlayer.finished)
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * grapplingThrowForce;
                         force.y *= grapplingThrowVerticalMultiplier;
-                        CurrentPlayerCharacter.DisplayJumpTrajectory(force);
+                        CurrentPlayerCharacter.DisplayJumpTrajectory(force, 0.0f);
 
                         yield return new WaitForEndOfFrame();
 
@@ -378,21 +425,26 @@ public class GameManager : MonoBehaviour
                             SoundManager.PlaySound("throw");
 
                             grapplingTouchedSomething = false;
-                            Grappling grappling = CurrentPlayerCharacter.SpawnGrappling(force, () => {
+                            Grappling grappling = CurrentPlayerCharacter.SpawnGrappling(force, () =>
+                            {
                                 grapplingTouchedSomething = true;
                             });
 
                             float throwTime = Time.time;
 
-                            yield return new WaitUntil(() => (grapplingTouchedSomething && !Input.GetMouseButton(0)) || CurrentPlayer.finished || Time.time - throwTime > 10);
+                            yield return new WaitUntil(() =>
+                                (Time.time - throwTime > grapplingSafeDuration && grapplingTouchedSomething && !Input.GetMouseButton(0))
+                             || CurrentPlayer.finished || Time.time - throwTime > 10
+                            );
+
                             yield return new WaitForFixedUpdate();
 
                             if (!grapplingTouchedSomething) break; // Prevent soflock if grappling went out of the map
-                            
+
                             SetPointerType(PointerType.normal);
 
                             SetInfoText(LocalizationManager.GetValue("grappling_end"));
-                            
+
                             SoundManager.SoundHandle handle = SoundManager.PlaySound("grap_loop", true);
 
                             float startTime = Time.time;
@@ -413,19 +465,72 @@ public class GameManager : MonoBehaviour
                         }
                     }
                 }
+                else if (type == ActionType.cloudPlatform)
+                {
+                    SetInfoText(LocalizationManager.GetValue("platform_cloud"));
+                    SetPointerType(PointerType.aim);
+
+                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
+
+                    Vector2 delta;
+                    Vector2 targetPosition;
+                    bool ok;
+
+                    float startTime = Time.time;
+
+                    while (true)
+                    {
+                        do
+                        {
+                            delta = GetPointerDelta(CurrentPlayerCharacter.transform.position);
+                            targetPosition = (Vector2)CurrentPlayerCharacter.transform.position + delta;
+                            ok = IsPlatformAllowedOnPoint(targetPosition);
+
+                            SetPointerType(delta.magnitude < cloudPlatformMaxDistance && ok ? PointerType.aim : PointerType.notAllowed);
+
+                            yield return new WaitForEndOfFrame();
+                        }
+                        while ((!Input.GetMouseButton(0) && !CurrentPlayer.finished) || Time.time - startTime < cloudPlatformSafeDuration);
+
+                        if (CurrentPlayer.finished) { break; }
+
+                        if (delta.magnitude > cloudPlatformMaxDistance)
+                        {
+                            delta = delta.normalized * cloudPlatformMaxDistance;
+                        }
+
+                        ok = IsPlatformAllowedOnPoint(targetPosition);
+
+                        if (ok)
+                        {
+                            SoundManager.PlaySound("pchit");
+
+                            GameObject platform = Instantiate(cloudPlatformPrefab);
+                            platform.transform.position = CurrentPlayerCharacter.transform.position + (Vector3)delta;
+
+                            cloudPlatformAppearMovement.Do(t => {
+                                if (platform != null) {
+                                    platform.transform.localScale = Vector3.one * t;
+                                }
+                            });
+
+                            break;
+                        }
+                    }
+                }
 
                 SetPointerType(PointerType.normal);
                 card.Dark();
             }
 
             CurrentPlayer.DiscardHand();
-            
+
             SetInfoText("");
 
             if (!CurrentPlayer.finished)
             {
                 yield return new WaitForSeconds(turnEndDelay);
-                yield return new WaitUntil(() => CurrentPlayerCharacter.rb.velocity.magnitude < turnEndVelocityThreshold);
+                yield return new WaitUntil(() => CurrentPlayerCharacter.rb.linearVelocity.magnitude < turnEndVelocityThreshold);
             }
 
             if (!CurrentPlayer.finished && bonusAtEndOfTurn == BonusType.exchange)
@@ -446,15 +551,16 @@ public class GameManager : MonoBehaviour
                     Vector3 targetPosition = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
                     cardDrawMovement.DoReverse(t => card.transform.localPosition = targetPosition + new Vector3(0, -1, 0) * t);
 
-                    card.clickCallback = c => {
+                    card.clickCallback = c =>
+                    {
                         selectedExchangeDeckCard = c;
                         for (int i = 0; i < deckCards.Length; i++)
                         {
                             if (deckCards[i] != c) deckCards[i].Dark();
-                            else c.Light(); 
+                            else c.Light();
                         }
                     };
-                } 
+                }
 
                 // New cards
                 ActionType[] randomActions = GetRandomActions();
@@ -468,15 +574,16 @@ public class GameManager : MonoBehaviour
                     Vector3 targetPosition = new Vector3(GetHandXPosition(i, randomActions.Length), handYPosition + 300, 0);
                     cardExchangeAppearMovement.DoReverse(t => card.transform.localPosition = targetPosition + Vector3.up * t);
 
-                    card.clickCallback = c => {
+                    card.clickCallback = c =>
+                    {
                         selectedExchangeNewCard = c;
                         for (int i = 0; i < randomCards.Length; i++)
                         {
                             if (randomCards[i] != c) randomCards[i].Dark();
-                            else c.Light(); 
+                            else c.Light();
                         }
                     };
-                } 
+                }
 
                 yield return new WaitUntil(() => selectedExchangeNewCard != null && selectedExchangeDeckCard != null);
 
@@ -499,8 +606,8 @@ public class GameManager : MonoBehaviour
                     Vector3 startPosition = currentCard.transform.localPosition;
                     cardDrawMovement.Do(t => currentCard.transform.localPosition = startPosition + Vector3.down * t)
                         .setOnComplete(() => Destroy(currentCard.gameObject));
-                }                
-                
+                }
+
                 for (int i = 0; i < randomCards.Length; i++)
                 {
                     Card currentCard = randomCards[i];
@@ -512,7 +619,9 @@ public class GameManager : MonoBehaviour
                 }
             }
 
+            HideExchangeIcon();
             SetInfoText("");
+            SetPointerType(PointerType.normal);
             bonusAtEndOfTurn = BonusType.none;
 
             if (finishedRace)
@@ -526,12 +635,13 @@ public class GameManager : MonoBehaviour
                 yield return new WaitForSeconds(3);
                 CameraController.i.followCharacter = true;
             }
-            
+
             // Next turn! (repeat if players have finished race)
-            do {
+            do
+            {
                 currentPlayerID++;
                 currentPlayerID %= PlayerCount;
-            } while(CurrentPlayer.finished);
+            } while (CurrentPlayer.finished);
         }
     }
 
@@ -543,7 +653,7 @@ public class GameManager : MonoBehaviour
     private void CreatePlayers(PlayerInfo[] infos)
     {
         int playerCount = 0;
-        for (int i = 0; i < infos.Length; i++) 
+        for (int i = 0; i < infos.Length; i++)
         {
             if (infos[i].activated)
                 playerCount++;
@@ -552,7 +662,7 @@ public class GameManager : MonoBehaviour
         players = new Player[playerCount];
 
         int playerID = 0;
-        for (int i = 0; i < infos.Length; i++) 
+        for (int i = 0; i < infos.Length; i++)
         {
             if (!infos[i].activated) continue;
 
@@ -562,7 +672,7 @@ public class GameManager : MonoBehaviour
             players[playerID].SetDefaultCards();
 
             players[playerID].character = InstantiateCharacter(players[playerID]); // Create character GameObject
-            
+
             playerID++;
         }
 
@@ -621,7 +731,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < bonusCardCount; i++)
         {
             ActionType newAction = (ActionType)UnityEngine.Random.Range(0, (int)ActionType.maxValue);
-            
+
             if (alreadyPicked[(int)newAction])
             {
                 i--;
@@ -638,7 +748,6 @@ public class GameManager : MonoBehaviour
     public void SetPointerType(PointerType type)
     {
         pointerType = type;
-        pointer.sprite = pointers[(int)type];
     }
 
     public void PlayerFinishesRace(Player player)
@@ -672,7 +781,7 @@ public class GameManager : MonoBehaviour
         raceStarted = false;
 
         if (PlayerCount > 1)
-        {        
+        {
             for (int i = 1; i < PlayerCount; i++)
             {
                 // Search player with rank
@@ -684,7 +793,7 @@ public class GameManager : MonoBehaviour
                         break;
                     }
                 }
-                
+
                 yield return new WaitForSeconds(smallDelay);
             }
 
@@ -750,7 +859,8 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setIgnoreTimeScale(true).setOnComplete(() => {
+        transitionMovement.DoReverse(t => transitionMaterial.SetFloat("_Size", t)).setIgnoreTimeScale(true).setOnComplete(() =>
+        {
             Time.timeScale = 1;
             finishScreenCanvas.alpha = 0;
             AudioListener.volume = 1;
@@ -773,5 +883,44 @@ public class GameManager : MonoBehaviour
         if (language == LocalizationManager.Language.maxValue)
             language = LocalizationManager.Language.systemLanguage + 1;
         LocalizationManager.UpdateLanguage(language);
+    }
+
+    public bool IsPlatformAllowedOnPoint(Vector2 position)
+    {
+        foreach (PlatformPrevention prevention in FindObjectsByType<PlatformPrevention>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            BoxCollider2D coll = prevention.gameObject.GetComponent<BoxCollider2D>();
+
+            if (coll.bounds.Contains(position))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void ShowExchangeIcon()
+    {
+        exchangeIcon.gameObject.SetActive(true);
+        exchangeIconParticles.gameObject.SetActive(true);
+
+        exchangeIconAppearMovement.Do(t =>
+        {
+            exchangeIcon.localScale = Vector3.one * t;
+        });
+
+        exchangeIconRotateMovement.Do(t =>
+        {
+            exchangeIcon.eulerAngles = new Vector3(0, 0, t);
+        });
+
+        exchangeIconParticles.Play();
+    }
+
+    public void HideExchangeIcon()
+    {
+        exchangeIcon.gameObject.SetActive(false);
+        exchangeIconParticles.gameObject.SetActive(false);
     }
 }

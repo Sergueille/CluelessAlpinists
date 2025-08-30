@@ -13,8 +13,12 @@ public class MapSelector : MonoBehaviour
     [SerializeField] private float margin;
     [SerializeField] private MovementDescr movement;
 
-    private void Start()
+    public void PopulateMapList()
     {
+        // Empty map list
+        int childCount = mapList.childCount;
+        for (int i = 0; i < childCount; i++) Destroy(mapList.GetChild(i).gameObject);
+
         foreach (Map map in GameManager.i.maps)
         {
             MapUI ui = Instantiate(mapPrefab, mapList).GetComponent<MapUI>();

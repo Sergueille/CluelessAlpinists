@@ -5,6 +5,7 @@ Shader "Unlit/Cloud"
         _MainTex ("Texture", 2D) = "white" {}
         _WindSpeed ("Wind Speed", float) = 1
         _Alpha ("Alpha", float) = 1
+        _Color ("Color", Color) = (1, 1, 1, 1)
         _WaveLength ("Wave length", float) = 1
         _WaveAmplitude ("Wave Amplitude", float) = 1
     }
@@ -44,6 +45,7 @@ Shader "Unlit/Cloud"
             float _WaveLength;
             float _WaveAmplitude;
             float _Alpha;
+            float4 _Color;
 
             v2f vert (appdata v)
             {
@@ -64,7 +66,7 @@ Shader "Unlit/Cloud"
                 fixed4 col = tex2D(_MainTex, float2(i.uv.x + deltaX, i.uv.y + deltaY));
                 col.a *= _Alpha;
 
-                return col;
+                return col * _Color;
             }
             ENDCG
         }
