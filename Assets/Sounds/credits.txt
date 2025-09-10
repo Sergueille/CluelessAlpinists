@@ -23,6 +23,7 @@ Some sounds have been modified. The credits are listed for each sound you can fi
 - tuto_in twinpix CC0 (https://freesound.org/people/twinpix/sounds/533350/)
 - tuto_out twinpix CC0 (https://freesound.org/people/twinpix/sounds/533350/)
 - beep Producing_RayLite CCBY (https://freesound.org/people/Producing_RayLite/sounds/700641/)
+- write newagesoup CC0 (https://freesound.org/people/newagesoup/sounds/335513/)
 
 Musics:
 - Symphony in F major, performed by Das Orchester Tsumugi, CCBY (https://clara.imslp.org/fr/work/349026)

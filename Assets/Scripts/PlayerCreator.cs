@@ -15,6 +15,12 @@ public class PlayerCreator : MonoBehaviour
     [SerializeField] private float colorTransitionDuration;
     [SerializeField] private Image background;
     [SerializeField] private Button continueButton;
+    [SerializeField] private RectTransform rootTransform;
+
+    [SerializeField] private string[] writeAudioClips;
+    [SerializeField] private float writeShiftAmount;
+    [SerializeField] private float writeElasticityTau;
+
 
     public int id;
 
@@ -36,6 +42,11 @@ public class PlayerCreator : MonoBehaviour
         if (PlayerPrefs.HasKey(prefKey))
             SetName(PlayerPrefs.GetString(prefKey));
         else SetName("");
+    }
+
+    private void Update()
+    {
+        rootTransform.anchoredPosition *= 1.0f - Time.deltaTime / writeElasticityTau;
     }
 
     public void SetName(string newName)
@@ -60,5 +71,8 @@ public class PlayerCreator : MonoBehaviour
         continueButton.interactable = activatedCount >= 1;
 
         PlayerPrefs.SetString(prefKey, newName);
+
+        SoundManager.PlaySound(writeAudioClips[Random.Range(0, writeAudioClips.Length)]);
+        rootTransform.anchoredPosition = new Vector2(Random.Range(-writeShiftAmount, writeShiftAmount), Random.Range(-writeShiftAmount, writeShiftAmount));
     }
 }
