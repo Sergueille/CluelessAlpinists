@@ -22790,8 +22790,8 @@ MonoBehaviour:
     duration: 0.4
     easeType: 6
   mapsRotation:
-    min: -2
-    max: 2
+    min: -3
+    max: 3
 --- !u!1 &1795493801
 GameObject:
   m_ObjectHideFlags: 0

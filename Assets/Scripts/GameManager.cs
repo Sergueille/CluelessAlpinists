@@ -394,7 +394,7 @@ public class GameManager : MonoBehaviour
                     bool haveReleased = false;
 
                     while (Time.time < startTime + balloonDuration && !CurrentPlayer.finished
-                       && GetValidClick() && haveReleased && Time.time > startTime + balloonSafeDuration)
+                       && (!GetValidClick() || !haveReleased || Time.time < startTime + balloonSafeDuration))
                     {
                         if (CurrentPlayerCharacter.rb.linearVelocity.y < balloonTargetVelocity)
                         {
