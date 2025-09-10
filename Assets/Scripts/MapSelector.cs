@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class MapSelector : MonoBehaviour
 {
@@ -12,6 +11,7 @@ public class MapSelector : MonoBehaviour
     [SerializeField] private float mapWidth;
     [SerializeField] private float margin;
     [SerializeField] private MovementDescr movement;
+    [SerializeField] private FloatRange mapsRotation;
 
     public void PopulateMapList()
     {
@@ -24,6 +24,8 @@ public class MapSelector : MonoBehaviour
             MapUI ui = Instantiate(mapPrefab, mapList).GetComponent<MapUI>();
             ui.image.sprite = Resources.Load<Sprite>(map.sceneName);
             ui.nameText.text = LocalizationManager.GetValue(map.sceneName);
+
+            ui.transform.eulerAngles = new Vector3(0, 0, mapsRotation.GetRandomValue());
         }
 
         SelectMap(currentMap);
@@ -57,7 +59,7 @@ public class MapSelector : MonoBehaviour
     }
 }
 
-[Serializable]
+[System.Serializable]
 public struct Map
 {
     public string sceneName;

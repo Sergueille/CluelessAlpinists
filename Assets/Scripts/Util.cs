@@ -133,7 +133,7 @@ public struct Chrono
     public void Disable()
     {
         enabled = false;
-    } 
+    }
 
     public float Get()
     {
@@ -142,3 +142,15 @@ public struct Chrono
         return Time.time - startTime;
     }
 } 
+
+[System.Serializable]
+public class FloatRange
+{
+    public float min;
+    public float max;
+
+    public float GetRandomValue()
+    {
+        return UnityEngine.Random.Range(min, max);
+    }
+}

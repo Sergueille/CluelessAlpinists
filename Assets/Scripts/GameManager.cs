@@ -86,6 +86,7 @@ public class GameManager : MonoBehaviour
     public MovementDescr exchangeIconRotateMovement;
 
     [HideInInspector] public bool cursorNotAllowedOverride = false;
+    [HideInInspector] public bool cursorOverPauseButton = false;
 
     [SerializeField] private float smallDelay = 0.1f;
 
@@ -203,6 +204,11 @@ public class GameManager : MonoBehaviour
         Cursor.visible = false;
 
         pointer.sprite = pointers[cursorNotAllowedOverride ? (int)PointerType.notAllowed : (int)pointerType];
+
+        if (Input.GetMouseButtonDown(0) && cursorNotAllowedOverride)
+        {
+            SoundManager.PlaySound("buzzer");
+        }
     }
 
     private void StartRace(PlayerInfo[] infos)
@@ -211,6 +217,7 @@ public class GameManager : MonoBehaviour
         CreatePlayers(infos);
         currentPlayerID = 0;
         playersFinished = 0;
+        cursorOverPauseButton = false;
         raceStarted = true;
         finishedRace = false;
         CameraController.i.followCharacter = true;
@@ -267,7 +274,7 @@ public class GameManager : MonoBehaviour
                 {
                     SetPointerType(PointerType.aim);
 
-                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
+                    yield return new WaitUntil(() => !GetValidClick());
 
                     while (true && !CurrentPlayer.finished)
                     {
@@ -280,7 +287,7 @@ public class GameManager : MonoBehaviour
                             force.y *= jumpVerticalMultiplier;
                             CurrentPlayerCharacter.DisplayJumpTrajectory(force, CurrentPlayerCharacter.GetComponent<Rigidbody2D>().linearDamping);
 
-                            if (Input.GetMouseButton(0))
+                            if (GetValidClick())
                             {
                                 CurrentPlayerCharacter.AddImpulse(force);
                                 SoundManager.PlaySound("boing");
@@ -316,7 +323,7 @@ public class GameManager : MonoBehaviour
 
                     while (fuel > 0 && !CurrentPlayer.finished)
                     {
-                        if (Input.GetMouseButton(0))
+                        if (GetValidClick())
                         {
                             Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jetpackForce;
                             force.y *= jetPackVerticalMultiplier;
@@ -357,7 +364,7 @@ public class GameManager : MonoBehaviour
                     SetInfoText(LocalizationManager.GetValue("throw"));
                     SetPointerType(PointerType.aim);
 
-                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
+                    yield return new WaitUntil(() => !GetValidClick());
 
                     while (true && !CurrentPlayer.finished)
                     {
@@ -367,7 +374,7 @@ public class GameManager : MonoBehaviour
 
                         yield return new WaitForEndOfFrame();
 
-                        if (Input.GetMouseButton(0))
+                        if (GetValidClick())
                         {
                             CurrentPlayerCharacter.SpawnBomb(force, type == ActionType.invertedBomb);
                             SoundManager.PlaySound("throw");
@@ -387,14 +394,14 @@ public class GameManager : MonoBehaviour
                     bool haveReleased = false;
 
                     while (Time.time < startTime + balloonDuration && !CurrentPlayer.finished
-                       && (!Input.GetMouseButton(0) || !haveReleased || Time.time < startTime + balloonSafeDuration))
+                       && GetValidClick() && haveReleased && Time.time > startTime + balloonSafeDuration)
                     {
                         if (CurrentPlayerCharacter.rb.linearVelocity.y < balloonTargetVelocity)
                         {
                             CurrentPlayerCharacter.AddForce(Vector2.up * balloonForce);
                         }
 
-                        if (!Input.GetMouseButton(0))
+                        if (!GetValidClick())
                         {
                             haveReleased = true;
                         }
@@ -410,7 +417,7 @@ public class GameManager : MonoBehaviour
                     SetInfoText(LocalizationManager.GetValue("grappling"));
                     SetPointerType(PointerType.aim);
 
-                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
+                    yield return new WaitUntil(() => !GetValidClick());
 
                     while (!CurrentPlayer.finished)
                     {
@@ -420,7 +427,7 @@ public class GameManager : MonoBehaviour
 
                         yield return new WaitForEndOfFrame();
 
-                        if (Input.GetMouseButton(0))
+                        if (GetValidClick())
                         {
                             SoundManager.PlaySound("throw");
 
@@ -433,7 +440,7 @@ public class GameManager : MonoBehaviour
                             float throwTime = Time.time;
 
                             yield return new WaitUntil(() =>
-                                (Time.time - throwTime > grapplingSafeDuration && grapplingTouchedSomething && !Input.GetMouseButton(0))
+                                (Time.time - throwTime > grapplingSafeDuration && grapplingTouchedSomething && !GetValidClick())
                              || CurrentPlayer.finished || Time.time - throwTime > 10
                             );
 
@@ -449,7 +456,7 @@ public class GameManager : MonoBehaviour
 
                             float startTime = Time.time;
                             bool nearEnough = false;
-                            while (Time.time < startTime + grapplingMaxDuration && !nearEnough && !Input.GetMouseButton(0) && !CurrentPlayer.finished)
+                            while (Time.time < startTime + grapplingMaxDuration && !nearEnough && !GetValidClick() && !CurrentPlayer.finished)
                             {
                                 Vector2 delta = grappling.transform.position - CurrentPlayerCharacter.transform.position;
                                 CurrentPlayerCharacter.AddForce(grapplingForce * delta.normalized);
@@ -470,7 +477,7 @@ public class GameManager : MonoBehaviour
                     SetInfoText(LocalizationManager.GetValue("platform_cloud"));
                     SetPointerType(PointerType.aim);
 
-                    yield return new WaitUntil(() => !Input.GetMouseButton(0));
+                    yield return new WaitUntil(() => !GetValidClick());
 
                     Vector2 delta;
                     Vector2 targetPosition;
@@ -490,7 +497,7 @@ public class GameManager : MonoBehaviour
 
                             yield return new WaitForEndOfFrame();
                         }
-                        while ((!Input.GetMouseButton(0) && !CurrentPlayer.finished) || Time.time - startTime < cloudPlatformSafeDuration);
+                        while ((!GetValidClick() && !CurrentPlayer.finished) || Time.time - startTime < cloudPlatformSafeDuration);
 
                         if (CurrentPlayer.finished) { break; }
 
@@ -508,8 +515,10 @@ public class GameManager : MonoBehaviour
                             GameObject platform = Instantiate(cloudPlatformPrefab);
                             platform.transform.position = CurrentPlayerCharacter.transform.position + (Vector3)delta;
 
-                            cloudPlatformAppearMovement.Do(t => {
-                                if (platform != null) {
+                            cloudPlatformAppearMovement.Do(t =>
+                            {
+                                if (platform != null)
+                                {
                                     platform.transform.localScale = Vector3.one * t;
                                 }
                             });
@@ -922,5 +931,26 @@ public class GameManager : MonoBehaviour
     {
         exchangeIcon.gameObject.SetActive(false);
         exchangeIconParticles.gameObject.SetActive(false);
+    }
+
+    public bool GetValidClickDown()
+    {
+        return Input.GetMouseButtonDown(0) && !cursorNotAllowedOverride && !cursorOverPauseButton;
+    }
+
+    public bool GetValidClick()
+    {
+        return Input.GetMouseButton(0) && !cursorNotAllowedOverride && !cursorOverPauseButton;
+    }
+
+
+    public void CursorEntersPauseButton()
+    {
+        cursorOverPauseButton = true;
+    }
+
+    public void CursorLeavesPauseButton()
+    {
+        cursorOverPauseButton = false;
     }
 }
