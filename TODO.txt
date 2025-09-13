@@ -1,6 +1,3 @@
 
-- empêcher clic sur les cartes: son + animation
+- empêcher clic sur les cartes (animation)
 - début de trajectoire sans collision pour les items et le saut
-- fix boutons
-- menu des maps avec cartes postales
-- modif. tuto: ne pas cliquer sur les cartes
