@@ -70,7 +70,7 @@ public class Player
 
         // Animate card
         Vector3 targetPosition = new Vector3(
-            GameManager.i.GetHandXPosition(hand.Count - 1, GameManager.i.cardsInHand),
+            GameManager.i.GetHandXPosition(hand.Count - 1, GameManager.i.cardsInHand, false),
             GameManager.i.handYPosition,
             0
         );
@@ -93,7 +93,7 @@ public class Player
 
             Vector3 startPosition = hand[i].transform.localPosition;
             Card card = hand[i];
-            GameManager.i.cardDrawMovement.Do(t => {
+            GameManager.i.cardDiscardMovement.Do(t => {
                 if (card != null) card.transform.localPosition = startPosition + new Vector3(0, -1, 0) * t;
             }).setOnComplete(() => GameObject.Destroy(card.gameObject));
         }

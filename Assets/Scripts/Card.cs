@@ -24,14 +24,13 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] private MovementDescr dragStartMovement;
     [SerializeField] private MovementDescr dragSnapMovement;
     [SerializeField] private MovementDescr darkLightMovement;
+    [SerializeField] private MovementDescr lowerMovement;
 
     private bool hovered = false;
     private bool dragged = false;
     private Vector2 dragStartMousePosition;
     private Vector3 dragStartPosition;
     private int lastDragIndex;
-
-    private PointerType typeBeforeEntering;
 
     private bool darkened;
 
@@ -50,7 +49,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private void Update()
     {
-        if (draggable) 
+        if (draggable)
         {
             if (hovered && Input.GetMouseButtonDown(0))
             {
@@ -71,7 +70,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                 // Snap to nearest position
                 ChangePositionInHand(GetNearestPositionInHand());
             }
-            else if (dragged) 
+            else if (dragged)
             {
                 Vector2 delta = (Vector2)Input.mousePosition - dragStartMousePosition;
                 delta.Scale(new Vector2(1.0f / Screen.width, 1.0f / Screen.height));
@@ -83,14 +82,14 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
                 if (index > lastDragIndex)
                 {
-                    for (int i = lastDragIndex; i < index; i++) 
+                    for (int i = lastDragIndex; i < index; i++)
                     {
                         owner.hand[i + 1].ChangePositionInHand(i);
                     }
                 }
                 else if (index < lastDragIndex)
                 {
-                    for (int i = index; i < lastDragIndex; i++) 
+                    for (int i = index; i < lastDragIndex; i++)
                     {
                         owner.hand[i].ChangePositionInHand(i + 1);
                     }
@@ -106,7 +105,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             }
         }
 
-        if (hovered && Input.GetMouseButtonDown(0) && clickCallback != null) 
+        if (hovered && Input.GetMouseButtonDown(0) && clickCallback != null)
         {
             clickCallback(this);
         }
@@ -115,10 +114,10 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void ChangePositionInHand(int targetIndex)
     {
         Vector3 targetPosition = new Vector3(
-            GameManager.i.GetHandXPosition(targetIndex, owner.hand.Count),
+            GameManager.i.GetHandXPosition(targetIndex, owner.hand.Count, false),
             transform.localPosition.y,
             transform.localPosition.z
-        );   
+        );
 
         dragSnapMovement.DoMovement(v => transform.localPosition = v, transform.localPosition, targetPosition);
     }
@@ -127,13 +126,13 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         for (int i = 0; i < owner.hand.Count; i++)
         {
-            float xPosition = GameManager.i.GetHandXPosition(i, owner.hand.Count);
+            float xPosition = GameManager.i.GetHandXPosition(i, owner.hand.Count, false);
 
-            if (xPosition > transform.localPosition.x) 
+            if (xPosition > transform.localPosition.x)
             {
                 if (i == 0) return 0;
 
-                float previousPosition = GameManager.i.GetHandXPosition(i - 1, owner.hand.Count);
+                float previousPosition = GameManager.i.GetHandXPosition(i - 1, owner.hand.Count, false);
 
                 if (xPosition - transform.localPosition.x > transform.localPosition.x - previousPosition)
                 {
@@ -151,7 +150,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (moveOnHover && !hovered) 
+        if (moveOnHover && !hovered)
         {
             hoverMovement.TryCancel();
             hoverMovement.Do(t => image.transform.localPosition = Vector3.up * t);
@@ -160,7 +159,6 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         if (clickCallback == null && !draggable)
         {
-            typeBeforeEntering = GameManager.i.pointerType;
             GameManager.i.cursorNotAllowedOverride = true;
         }
 
@@ -169,7 +167,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (moveOnHover && hovered) 
+        if (moveOnHover && hovered)
         {
             hoverMovement.TryCancel();
             hoverMovement.DoReverse(t => image.transform.localPosition = Vector3.up * t);
@@ -203,5 +201,16 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         hoverMovement.TryCancel();
         darkLightMovement.TryCancel();
+    }
+
+    public void Lower(int currentIndexInHand)
+    {
+        Vector3 targetPosition = new Vector3(
+            GameManager.i.GetHandXPosition(currentIndexInHand, GameManager.i.cardsInHand, true),
+            GameManager.i.handYPositionLowered,
+            0.0f
+        );
+
+        lowerMovement.DoMovement(pos => transform.localPosition = pos, transform.localPosition, targetPosition);
     }
 }   

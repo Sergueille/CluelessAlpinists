@@ -60,8 +60,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float characterStartVerticalSpacing = 0.7f;
     [SerializeField] private float characterStartHorizontalShift = 0.01f;
     public float handYPosition = -305;
+    public float handYPositionLowered = -350;
     public float handCardsSpacing = 100;
+    public float handCardsSpacingLowered = 50;
     public MovementDescr cardDrawMovement;
+    public MovementDescr cardDiscardMovement;
     public MovementDescr cardDrawMovementRotation;
     [SerializeField] private TextMeshProUGUI infoText;
     [SerializeField] private SpriteRenderer pointer;
@@ -250,12 +253,15 @@ public class GameManager : MonoBehaviour
 
             ToggleContinueButton(false);
 
-            // Darken cards
-            foreach (Card card in CurrentPlayer.hand)
+            // Darken and lower cards
+            for (int i = 0; i < CurrentPlayer.hand.Count; i++)
             {
+                Card card = CurrentPlayer.hand[i];
+
                 card.Dark();
                 card.draggable = false;
                 card.moveOnHover = false;
+                card.Lower(i);
             }
 
             foreach (Card card in CurrentPlayer.hand)
@@ -264,7 +270,7 @@ public class GameManager : MonoBehaviour
 
                 // Highlight card
                 card.Light();
-                card.transform.SetAsLastSibling();
+                // card.transform.SetAsLastSibling();
 
                 ActionType type = card.type;
 
@@ -557,7 +563,7 @@ public class GameManager : MonoBehaviour
                     card.moveOnHover = true;
                     deckCards[i] = card;
 
-                    Vector3 targetPosition = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count), handYPosition, 0);
+                    Vector3 targetPosition = new Vector3(GetHandXPosition(i, CurrentPlayer.allActions.Count, false), handYPosition, 0);
                     cardDrawMovement.DoReverse(t => card.transform.localPosition = targetPosition + new Vector3(0, -1, 0) * t);
 
                     card.clickCallback = c =>
@@ -580,7 +586,7 @@ public class GameManager : MonoBehaviour
                     card.moveOnHover = true;
                     randomCards[i] = card;
 
-                    Vector3 targetPosition = new Vector3(GetHandXPosition(i, randomActions.Length), handYPosition + 300, 0);
+                    Vector3 targetPosition = new Vector3(GetHandXPosition(i, randomActions.Length, false), handYPosition + 300, 0);
                     cardExchangeAppearMovement.DoReverse(t => card.transform.localPosition = targetPosition + Vector3.up * t);
 
                     card.clickCallback = c =>
@@ -712,9 +718,9 @@ public class GameManager : MonoBehaviour
         return res;
     }
 
-    public float GetHandXPosition(int cardID, int cardCount)
+    public float GetHandXPosition(int cardID, int cardCount, bool useLoweredSpacing)
     {
-        return (cardID + 0.5f - (float)cardCount / 2) * handCardsSpacing;
+        return (cardID + 0.5f - (float)cardCount / 2) * (useLoweredSpacing ? handCardsSpacingLowered : handCardsSpacing);
     }
 
     public Vector2 GetPointerDirection(Vector2 pos)

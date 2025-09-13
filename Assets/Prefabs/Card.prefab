@@ -372,6 +372,10 @@ MonoBehaviour:
     amplitude: 0.5
     duration: 0.2
     easeType: 19
+  lowerMovement:
+    amplitude: 0
+    duration: 0.5
+    easeType: 7
 --- !u!1 &4317514044491485829
 GameObject:
   m_ObjectHideFlags: 0
