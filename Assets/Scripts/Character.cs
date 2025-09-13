@@ -179,6 +179,7 @@ public class Character : MonoBehaviour
 
     public void AddImpulse(Vector2 force)
     {
+        rb.linearVelocity = Vector2.zero;
         rb.AddForce(force, ForceMode2D.Impulse);
     }
 
@@ -197,7 +198,9 @@ public class Character : MonoBehaviour
     {
         GameObject bomb = Instantiate(inverted ? invertedBombPrefab : bombPrefab);
         bomb.transform.position = transform.position;
-        bomb.GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Impulse);
+
+        Rigidbody2D bombRB = bomb.GetComponent<Rigidbody2D>();
+        bombRB.AddForce(force, ForceMode2D.Impulse);
     }
 
     public Grappling SpawnGrappling(Vector2 force, Action callback)
