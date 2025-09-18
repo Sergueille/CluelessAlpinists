@@ -26,6 +26,8 @@ public class MapSelector : MonoBehaviour
             ui.nameText.text = LocalizationManager.GetValue(map.sceneName);
 
             ui.transform.eulerAngles = new Vector3(0, 0, mapsRotation.GetRandomValue());
+
+            ui.SetDifficultyText(map.difficulty);
         }
 
         SelectMap(currentMap);
@@ -59,9 +61,15 @@ public class MapSelector : MonoBehaviour
     }
 }
 
+public enum Difficulty
+{
+    Hard, VeryHard, ExtremelyHard
+}
+
 [System.Serializable]
 public struct Map
 {
     public string sceneName;
+    public Difficulty difficulty;
 }
 

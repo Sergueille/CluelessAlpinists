@@ -262,6 +262,8 @@ public class GameManager : MonoBehaviour
                 card.draggable = false;
                 card.moveOnHover = false;
                 card.Lower(i);
+
+                card.transform.SetAsLastSibling(); // Card will be sorted by index on the z axis
             }
 
             foreach (Card card in CurrentPlayer.hand)
@@ -291,7 +293,13 @@ public class GameManager : MonoBehaviour
 
                             Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * jumpForce;
                             force.y *= jumpVerticalMultiplier;
-                            CurrentPlayerCharacter.DisplayJumpTrajectory(force, CurrentPlayerCharacter.GetComponent<Rigidbody2D>().linearDamping);
+                            CurrentPlayerCharacter.DisplayJumpTrajectory(
+                                force,
+                                CurrentPlayerCharacter.GetComponent<Rigidbody2D>().linearDamping,
+                                CurrentPlayerCharacter.GetComponent<CircleCollider2D>().radius,
+                                CurrentPlayerCharacter.gameObject.layer,
+                                0.0f
+                            );
 
                             if (GetValidClick())
                             {
@@ -376,7 +384,17 @@ public class GameManager : MonoBehaviour
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * bombThrowForce;
                         force.y *= bombThrowVerticalMultiplier;
-                        CurrentPlayerCharacter.DisplayJumpTrajectory(force, 0.0f);
+
+                        GameObject bombPrefab = CurrentPlayerCharacter.GetBombPrefab();
+                        float radius = bombPrefab.GetComponentInChildren<CircleCollider2D>().radius;
+
+                        CurrentPlayerCharacter.DisplayJumpTrajectory(
+                            force,
+                            0.0f,
+                            radius,
+                            bombPrefab.layer,
+                            radius - 0.25f // 0.25 is player radius. This prevent the bomb from intersecting with the ground
+                        );
 
                         yield return new WaitForEndOfFrame();
 
@@ -429,7 +447,15 @@ public class GameManager : MonoBehaviour
                     {
                         Vector2 force = GetPointerDirection(CurrentPlayerCharacter.transform.position) * grapplingThrowForce;
                         force.y *= grapplingThrowVerticalMultiplier;
-                        CurrentPlayerCharacter.DisplayJumpTrajectory(force, 0.0f);
+
+                        GameObject grapplingPrefab = CurrentPlayerCharacter.GetGrapplingPrefab();
+                        CurrentPlayerCharacter.DisplayJumpTrajectory(
+                            force,
+                            0.0f,
+                            grapplingPrefab.GetComponentInChildren<CircleCollider2D>().radius,
+                            grapplingPrefab.layer,
+                            0.0f
+                        );
 
                         yield return new WaitForEndOfFrame();
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Text;
+using System.Reflection;
 
 public enum ActionType
 {
@@ -18,7 +19,7 @@ public static class Util
             T tmp = array[id];
             array[id] = array[i];
             array[i] = tmp;
-        } 
+        }
     }
 
     public static void ShuffleList<T>(List<T> list)
@@ -29,9 +30,9 @@ public static class Util
             T tmp = list[id];
             list[id] = list[i];
             list[i] = tmp;
-        } 
+        }
     }
-    
+
     public static void SetLayerWithChildren(GameObject go, int layer)
     {
         go.layer = layer;
@@ -46,13 +47,23 @@ public static class Util
     {
         T comp = go.GetComponent<T>();
 
-        if (comp != null) 
+        if (comp != null)
             return comp;
 
-        if (go.transform.parent != null) 
+        if (go.transform.parent != null)
             return GetComponentInParents<T>(go.transform.parent.gameObject);
 
         return null;
+    }
+
+    public static void CopyObjectInto<T>(T to, T from)
+    {
+        Type t = from.GetType();
+        foreach (PropertyInfo info in t.GetProperties(System.Reflection.BindingFlags.Default))
+        {
+            info.SetValue(to, info.GetValue(from));
+        }
+
     }
 }
 

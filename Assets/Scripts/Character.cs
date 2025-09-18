@@ -13,8 +13,9 @@ public class Character : MonoBehaviour
     [SerializeField] private GameObject invertedBombPrefab;
     [SerializeField] private GameObject grapplingPrefab;
     [SerializeField] private LineRenderer lineRenderer;
+    [SerializeField] private SpriteRenderer lineCrossRenderer;
     [SerializeField] private float linePointsDeltaTime = 0.1f;
-    [SerializeField] private int linePointsCount = 150;
+    [SerializeField] private int maxLinePointsCount = 150;
     [SerializeField] private float dashedLineOffsetSpeed = 0.5f;
     [SerializeField] private float dashedFadeSpeed = 0.5f;
     [SerializeField] private float grapplingStartPosition = 0.5f;
@@ -50,8 +51,9 @@ public class Character : MonoBehaviour
     public bool shouldPreventJumpCollisisons = false;
 
     private int windZoneCollisionCount = 0;
+    private Vector2 crossPosition;
 
-    public void Init(Player owner) 
+    public void Init(Player owner)
     {
         this.owner = owner;
         sr.sprite = owner.info.skin;
@@ -59,6 +61,7 @@ public class Character : MonoBehaviour
         nameText.gameObject.SetActive(false);
 
         lineRenderer.gameObject.SetActive(false);
+        lineCrossRenderer.gameObject.SetActive(false);
         balloons.color = new Color(1, 1, 1, 0);
 
         arrowStartPosition = turnArrow.transform.localPosition;
@@ -89,6 +92,9 @@ public class Character : MonoBehaviour
         }
 
         lineRenderer.material.color = new Color(lineRenderer.material.color.r, lineRenderer.material.color.g, lineRenderer.material.color.b, lineRenderer.material.color.a - Time.deltaTime * dashedFadeSpeed);
+        lineCrossRenderer.material.color = lineRenderer.material.color;
+
+        lineCrossRenderer.transform.position = crossPosition;
 
         balloons.transform.eulerAngles = new Vector3(0, 0, 0);
 
@@ -136,8 +142,87 @@ public class Character : MonoBehaviour
         return contactCount > 0;
     }
 
-    public void DisplayJumpTrajectory(Vector2 force, float damping)
+    public void DisplayJumpTrajectory(Vector2 force, float damping, float radius, int layer, float safeDistance)
     {
+        List<Vector3> points = new List<Vector3>();
+        Vector2 currentPosition = transform.position;
+        Vector2 previousPosition = transform.position;
+        Vector2 currentVelocity = force;
+        float travelledDistance = 0;
+
+        points.Add(currentPosition);
+
+        Vector2 collisionPoint = Vector2.zero;
+
+        for (int i = 0; i < maxLinePointsCount; i++)
+        {
+            Vector2 dampingForce = -currentVelocity * damping;
+
+            currentVelocity += Physics2D.gravity * linePointsDeltaTime * 0.5f;
+            currentVelocity += dampingForce * linePointsDeltaTime * 0.5f;
+
+            currentPosition += currentVelocity * linePointsDeltaTime;
+
+            currentVelocity += Physics2D.gravity * linePointsDeltaTime * 0.5f;
+            currentVelocity += dampingForce * linePointsDeltaTime * 0.5f;
+
+            ContactFilter2D contactFilter = new ContactFilter2D();
+            contactFilter.useDepth = false;
+            contactFilter.useOutsideDepth = false;
+            contactFilter.useLayerMask = false;
+
+            if (travelledDistance > safeDistance)
+            {
+                List<RaycastHit2D> hits = new List<RaycastHit2D>();
+                Physics2D.CircleCast(currentPosition, radius, previousPosition - currentPosition, contactFilter, hits, (previousPosition - currentPosition).magnitude);
+
+                bool gotContact = false;
+                foreach (RaycastHit2D hit in hits)
+                {
+                    if (!Physics2D.GetIgnoreLayerCollision(layer, hit.collider.gameObject.layer) && hit.rigidbody != rb)
+                    {
+                        PlatformEffector2D platformEffector = hit.collider.gameObject.GetComponent<PlatformEffector2D>();
+                        bool platformAngleOk = platformEffector != null && Vector2.Angle(hit.normal, Vector2.up) < 0.5f * platformEffector.surfaceArc;
+
+                        if (platformEffector == null || platformAngleOk)
+                        {
+                            // There was a contact!
+                            gotContact = true;
+                            collisionPoint = hit.centroid;
+                            break;
+                        }
+                    }
+                }
+
+                if (gotContact)
+                {
+                    break;
+                }
+            }
+
+            points.Add(currentPosition);
+
+            travelledDistance += (currentPosition - previousPosition).magnitude;
+            previousPosition = currentPosition;
+        }
+
+        //Destroy(testObject);
+
+
+        lineRenderer.positionCount = points.Count;
+        lineRenderer.SetPositions(points.ToArray());
+        lineRenderer.gameObject.SetActive(true);
+        lineRenderer.material.color = new Color(lineRenderer.material.color.r, lineRenderer.material.color.g, lineRenderer.material.color.b, 1);
+        lineRenderer.material.SetVector("_MainTex_ST", new Vector4(1.4f, 1, Time.time * dashedLineOffsetSpeed, 0));
+
+        lineCrossRenderer.gameObject.SetActive(true);
+        lineCrossRenderer.transform.position = collisionPoint;
+        crossPosition = collisionPoint;
+        lineCrossRenderer.color = new Color(1, 1, 1, 1);
+        lineCrossRenderer.transform.rotation = Quaternion.identity;
+
+
+        /*
         Vector3[] positions = new Vector3[linePointsCount];
         Vector2 velocity = force;
         Vector2 pos = transform.position;
@@ -153,11 +238,7 @@ public class Character : MonoBehaviour
             positions[i] = new Vector3(pos.x, pos.y, 0);
         }
 
-        lineRenderer.positionCount = positions.Length;
-        lineRenderer.SetPositions(positions);
-        lineRenderer.gameObject.SetActive(true);
-        lineRenderer.material.color = new Color(lineRenderer.material.color.r, lineRenderer.material.color.g, lineRenderer.material.color.b, 1);
-        lineRenderer.material.SetVector("_MainTex_ST", new Vector4(1.4f, 1, Time.time * dashedLineOffsetSpeed, 0));
+        */
     }
 
     public void ShowBalloons()
@@ -278,7 +359,7 @@ public class Character : MonoBehaviour
         hovered = true;
         nameText.gameObject.SetActive(true);
         nameTextMovement.Do(t => nameText.fontSize = t);
-        
+
         eyesWhiteSpriteRenderer.sprite = eyesClosed;
         eyesBlackSpriteRenderer.enabled = false;
     }
@@ -287,8 +368,19 @@ public class Character : MonoBehaviour
     {
         hovered = false;
         nameTextMovement.DoReverse(t => nameText.fontSize = t).setOnComplete(() => nameText.gameObject.SetActive(false));
-        
+
         eyesWhiteSpriteRenderer.sprite = eyesOpened;
         eyesBlackSpriteRenderer.enabled = true;
     }
+
+    public GameObject GetBombPrefab()
+    {
+        return bombPrefab;
+    }
+
+    public GameObject GetGrapplingPrefab()
+    {
+        return grapplingPrefab;
+    }
+
 }

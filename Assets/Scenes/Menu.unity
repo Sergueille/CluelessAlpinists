@@ -13829,10 +13829,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maps:
+  - sceneName: Map-1
+    difficulty: 0
   - sceneName: Map0
+    difficulty: 1
   - sceneName: Map1
+    difficulty: 1
   - sceneName: Map2
+    difficulty: 1
   - sceneName: Map3
+    difficulty: 2
   maxPlayerCount: 6
   cardsInHand: 3
   bonusCardCount: 4
@@ -23118,7 +23124,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 8bdae0aee2c79204b880716d92d32f57, type: 3}
+  m_Resource: {fileID: 8300000, guid: abfff5c5d354f9b6bb06b13caa73ee88, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.6
   m_Pitch: 1
