@@ -5284,8 +5284,8 @@ MonoBehaviour:
   grapplingPrefab: {fileID: 348430995599500768, guid: bba2ca853753f0d41aee7811f5c721d1, type: 3}
   lineRenderer: {fileID: 4730051767878314920}
   lineCrossRenderer: {fileID: 3147635183414792632}
-  linePointsDeltaTime: 0.03
-  maxLinePointsCount: 150
+  linePointsDeltaTime: 0.015
+  maxLinePointsCount: 300
   dashedLineOffsetSpeed: -1
   dashedFadeSpeed: 2
   grapplingStartPosition: 0

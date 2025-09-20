@@ -1,7 +1,7 @@
 
-- empêcher clic sur les cartes (animation)
 - début de trajectoire sans collision pour les items et le saut
 
 - première maps
 - meilleure musique
 - bug pause leantween
+- bug si deux joueurs passent le cdrapeau en même temps

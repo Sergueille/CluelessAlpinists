@@ -95,6 +95,7 @@ public class Character : MonoBehaviour
         lineCrossRenderer.material.color = lineRenderer.material.color;
 
         lineCrossRenderer.transform.position = crossPosition;
+        lineCrossRenderer.transform.rotation = Quaternion.identity;
 
         balloons.transform.eulerAngles = new Vector3(0, 0, 0);
 
@@ -142,7 +143,7 @@ public class Character : MonoBehaviour
         return contactCount > 0;
     }
 
-    public void DisplayJumpTrajectory(Vector2 force, float damping, float radius, int layer, float safeDistance)
+    public void DisplayJumpTrajectory(Vector2 force, float damping, float radius, int layer, float safeDistance, bool ignorePlatformEffectors)
     {
         List<Vector3> points = new List<Vector3>();
         Vector2 currentPosition = transform.position;
@@ -182,9 +183,10 @@ public class Character : MonoBehaviour
                     if (!Physics2D.GetIgnoreLayerCollision(layer, hit.collider.gameObject.layer) && hit.rigidbody != rb)
                     {
                         PlatformEffector2D platformEffector = hit.collider.gameObject.GetComponent<PlatformEffector2D>();
-                        bool platformAngleOk = platformEffector != null && Vector2.Angle(hit.normal, Vector2.up) < 0.5f * platformEffector.surfaceArc;
+                        bool platformAngleOk = platformEffector != null
+                                            && Vector2.Angle(previousPosition - currentPosition, platformEffector.transform.up) < 0.5f * platformEffector.surfaceArc;
 
-                        if (platformEffector == null || platformAngleOk)
+                        if (platformEffector == null || ignorePlatformEffectors || platformAngleOk)
                         {
                             // There was a contact!
                             gotContact = true;
@@ -219,7 +221,6 @@ public class Character : MonoBehaviour
         lineCrossRenderer.transform.position = collisionPoint;
         crossPosition = collisionPoint;
         lineCrossRenderer.color = new Color(1, 1, 1, 1);
-        lineCrossRenderer.transform.rotation = Quaternion.identity;
 
 
         /*

@@ -298,7 +298,8 @@ public class GameManager : MonoBehaviour
                                 CurrentPlayerCharacter.GetComponent<Rigidbody2D>().linearDamping,
                                 CurrentPlayerCharacter.GetComponent<CircleCollider2D>().radius,
                                 CurrentPlayerCharacter.gameObject.layer,
-                                0.0f
+                                0.0f,
+                                false
                             );
 
                             if (GetValidClick())
@@ -393,7 +394,8 @@ public class GameManager : MonoBehaviour
                             0.0f,
                             radius,
                             bombPrefab.layer,
-                            radius - 0.25f // 0.25 is player radius. This prevent the bomb from intersecting with the ground
+                            radius - 0.25f, // 0.25 is player radius. This prevent the bomb from intersecting with the ground
+                            false
                         );
 
                         yield return new WaitForEndOfFrame();
@@ -454,7 +456,8 @@ public class GameManager : MonoBehaviour
                             0.0f,
                             grapplingPrefab.GetComponentInChildren<CircleCollider2D>().radius,
                             grapplingPrefab.layer,
-                            0.0f
+                            0.0f,
+                            true
                         );
 
                         yield return new WaitForEndOfFrame();
@@ -793,6 +796,7 @@ public class GameManager : MonoBehaviour
 
     public void PlayerFinishesRace(Player player)
     {
+        MapManager.i.finishParticles.transform.position = CameraController.i.transform.position;
         MapManager.i.finishParticles.Play();
         CameraController.i.followCharacter = false;
 
